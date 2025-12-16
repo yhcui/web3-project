@@ -1,0 +1,23 @@
+OpenZeppelin是Solidity编程的标准库，质量和安全都很高，几乎所有的生产环境项目都要用到的，建议完整浏览一下官方开发文档；
+Docs：https://docs.openzeppelin.com/contracts/5.x/；
+
+5）（可选，推荐）有助于深入理解Go语言的开源书籍：
+100 个 Go 常见错误及如何避免：https://100go.co/zh/；
+Go语言高级编程：https://chai2010.cn/advanced-go-programming-book/；
+Go语言高性能编程：https://geektutu.com/post/high-performance-go.html；
+
+
+4）（可选，推荐）非常全面的参考书籍，一遍做实战，一遍查阅这些书籍，可以进一步加深对区块链技术的理解：
+精通以太坊：https://github.com/ouyun/MasterEthereumChineseOpenEdition；
+精通比特币（第二版）：https://github.com/inoutcode/bitcoin_book_2nd；
+
+智能合约编程在实际工作当中是否足够专业，主要体现在安全和性能两个方面，在完成任务之后还学有余力，就可以花点时间去了解这两方面的知识。
+
+性能优化：
+Solidity 高级程序设计-GAS优化：https://professional-solidity.readthedocs.io/zh-cn/latest/forever/21.gas.html；
+The RareSkills Book of Solidity Gas Optimization: 80+ Tips：https://rareskills.io/post/gas-optimization；
+
+合约安全：
+Solidity 高级程序设计-合约安全：https://professional-solidity.readthedocs.io/zh-cn/latest/forever/20.safe.html；
+漏洞根本原因分析：https://web3sec.notion.site/8e9274d6dbbc4ff18d9034179a173fca?v=7ea2c3edd2514c7db80fa61db7571291；
+真实合约攻击案例复现：https://github.com/SunWeb3Sec/DeFiHackLabs；
