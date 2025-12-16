@@ -33,10 +33,35 @@ PledgePool.sol 是 Pledge 项目的核心智能合约之一，主要功能包括
 - **自动清算**: 根据设定的阈值自动触发清算操作，保护借贷双方的利益。
 - **费用管理**: 设置和管理借贷费用，确保平台的可持续运营。
 
-  ![whiteboard_exported_image](https://github.com/user-attachments/assets/db77416d-9a71-46b8-84dd-eb5a72fcdf90)  
+  ![whiteboard_exported_image](images/2.png)  
+  相关单词  
+  pledge：质押   
+  lend: 借给，借出；贷出   
+  settle 结算： 买卖双方在交易达成后，实际完成资金和资产（或合约权利义务）的交付与转移的过程，从而使交易最终了结、风险终结。  
+  ![whiteboard_exported_image](images/1.png)  
 
 
 ## :four:  事件和函数
 - **事件**:如 DepositLend、RefundLend、ClaimLend 等，用于记录用户操作。
 - **函数**: 如 DepositLend、refundLend、claimLend 等，实现具体的业务逻辑。
 
+## 名词解释
+### 相关知识
+在 DeFi “借贷池”里，有两种主要角色：  
+放贷的人（供应者）：把钱存进去赚利息（像 DepositLend）。  
+借钱的人（借款者）：需要先“抵押”自己的加密货币作为担保，才能借走钱  
+
+### DepositLend 
+存款借贷  
+你把钱（加密货币）存进“DeFi 银行”的借贷池，让别人可以借走，你赚利息。这一步就是“存款并开始放贷”。  
+### refundLend 
+退款借贷 / 撤回存款（部分或全部）  
+如果你不想继续放贷了，想把钱拿回来（包括本金 + 已赚利息），就调用这个函数。“refund”在这里指“退回”你的供应资产  
+
+### claimLend
+领取借贷奖励 / 认领利息或额外奖励  
+有时候利息不是自动加到本金里，而是单独累积成“奖励”，你需要手动点一下“领取”才能到账  
+
+###Depositborrow
+抵押存款以借款 / 存入抵押品来借钱。  
+有些协议把“存抵押 + 借钱”合并成一个函数，便于用户一键操作，减少 gas 费  
