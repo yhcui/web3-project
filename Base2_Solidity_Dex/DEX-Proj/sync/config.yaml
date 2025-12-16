@@ -1,0 +1,26 @@
+
+
+Database:
+  Host: db.tqpvxiwqnlzfqefwjgox.supabase.co
+  Port: 5432
+  User: postgres
+  Password: 233333@Zj
+  Name: postgres
+
+Infura:
+  Url: https://sepolia.infura.io/v3/d8ed0bd1de8242d998a1405b6932ab33
+  StartBlock: 8340000
+
+Contracts:
+  PoolManager: 0xddC12b3F9F7C91C79DA7433D8d212FB78d609f7B
+  PositionManager: 0xbe766Bf20eFfe431829C5d5a2744865974A0B610
+  SwapRouter: 0xD2c220143F5784b3bD84ae12747d97C8A36CeCB2
+
+
+Tokens:
+  MNTokenA: 0x4798388e3adE569570Df626040F07DF71135C48E
+  MNTokenB: 0x5A4eA3a013D42Cfd1B1609d19f6eA998EeE06D30
+  MNTokenC: 0x86B5df6FF459854ca91318274E47F4eEE245CF28
+  MNTokenD: 0x7af86B1034AC4C925Ef5C3F637D1092310d83F03
+
+
