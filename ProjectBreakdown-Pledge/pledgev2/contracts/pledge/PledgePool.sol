@@ -10,80 +10,128 @@ import "../interface/IUniswapV2Router02.sol";
 import "../multiSignature/multiSignatureClient.sol";
 
 
+/**
+ * @title PledgePool
+ * @dev 抵押借贷池主合约，实现了一个完整的借贷流程管理
+ * 包括创建借贷池、存款、借款、结算、清算等功能
+ * 
+ */
+/*
+这种设计在 DeFi 中被称为 “离散型贷款池”（Discrete Lending Pool） 或 “定期/固定期限池”
 
+单次池 通常用于 “固定期限、固定利率” 的借贷场景。它的生命周期如下：
+创建： 平台或发起人创建一个池子，规定：“我要借出 100万 BUSD，年化 5%，12月31日到期。”
+募集 (MATCH)： 出借人往里存 BUSD，借款人往里存 BTC 抵押品。
+起息 (EXECUTION)： 达到 settleTime，借款人拿走 BUSD，利息开始正式计算。
+存续期： 期间只监控抵押物价格。如果跌破 autoLiquidateThreshold，直接清算。
+结算 (FINISH)： 到了 endTime，借款人还钱，出借人凭 spCoin 拿回本息。这个池子任务完成，从此废弃。
+
+*/
 contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    // default decimal
-    uint256 constant internal calDecimal = 1e18;
-    // Based on the decimal of the commission and interest
-    uint256 constant internal baseDecimal = 1e8;
-    uint256 public minAmount = 100e18;
-    // one years
-    uint256 constant baseYear = 365 days;
 
+    // default decimal
+    // 默认精度
+    uint256 constant internal calDecimal = 1e18;
+
+    // Based on the decimal of the commission and interest
+    // 手续费和利率计算基准精度
+    uint256 constant internal baseDecimal = 1e8;
+
+    // 最小存款金额
+    uint256 public minAmount = 100e18;
+
+    // one years
+    // 一年时间常量
+    uint256 constant baseYear = 365 days;
+    /*
+    池子会根据时间轴和资金变动在不同状态间切换：
+    MATCH: 匹配期，大家存钱、抵押。
+    EXECUTION: 执行期，借款中，利息累加。
+    FINISH: 正常结束，大家各自取钱。
+    LIQUIDATION: 清算中，抵押物不足，正在被强制平仓。
+    UNDONE: 撤销/未达成，比如募集金额不足。
+    */
     enum PoolState{ MATCH, EXECUTION, FINISH, LIQUIDATION, UNDONE }
     PoolState constant defaultChoice = PoolState.MATCH;
 
     bool public globalPaused = false;
     // pancake swap router
+    // 交换路由地址
     address public swapRouter;
+
     // receiving fee address
+    // 手续费接收地址
     address payable public feeAddress;
+
     // oracle address
+    // 预言机地址
     IBscPledgeOracle public oracle;
     // fee
+    // 出借手续费率
     uint256 public lendFee;
+
+    // 借入手续费率
     uint256 public borrowFee;
 
-        // 每个池的基本信息
+    // 每个池的基本信息
+    // 池子是针对“单次”或“单批次”借贷设计的
     struct PoolBaseInfo{
-        uint256 settleTime;         // 结算时间
-        uint256 endTime;            // 结束时间
-        uint256 interestRate;       // 池的固定利率，单位是1e8 (1e8)
-        uint256 maxSupply;          // 池的最大限额
-        uint256 lendSupply;         // 当前实际存款的借款
-        uint256 borrowSupply;       // 当前实际存款的借款
-        uint256 martgageRate;       // 池的抵押率，单位是1e8 (1e8)
-        address lendToken;          // 借款方代币地址 (比如 BUSD..)
-        address borrowToken;        // 借款方代币地址 (比如 BTC..)
+        uint256 settleTime;         // 结算时间 这通常是池子停止“匹配”进入“执行”状态的时间点。在此时间之后，借款人和出借人的关系正式确立，开始计算利息。
+        uint256 endTime;            // (借贷结束时间): 借款的到期日。到期后，借款人必须归还本息，否则会面临违约或强制清算
+        uint256 interestRate;       // 固定年化利率（基于 baseDecimal）
+        uint256 maxSupply;          // 该池子允许借出的资金上限（Hard Cap），防止过度借贷风险。
+        uint256 lendSupply;         // 当前池子里已经存入多少钱（出借方提供的资金）。
+        uint256 borrowSupply;       // 当前已经有多少钱被借走了（借款方实际取走的资金）。
+        uint256 martgageRate;       // (抵押率): 这是质押率。比如你质押价值 100 美元的 BTC，如果抵押率是 60%，你最多只能借出 60 美元的 BUSD，单位是1e8 (1e8)
+        address lendToken;          // (出借代币): 借款人想借入的钱，通常是稳定币（如 BUSD, USDT）
+        address borrowToken;        // borrowToken (抵押代币): 借款人抵押给协议的资产（如 BTC, ETH）
         PoolState state;            // 状态 'MATCH, EXECUTION, FINISH, LIQUIDATION, UNDONE'
-        IDebtToken spCoin;          // sp_token的erc20地址 (比如 spBUSD_1..)
-        IDebtToken jpCoin;          // jp_token的erc20地址 (比如 jpBTC_1..)
+        IDebtToken spCoin;          // 出借凭证代币 sp_token的erc20地址 (比如 spBUSD_1..)出借人的凭证。你存入 BUSD，协议给你 spBUSD。持有它意味着你有权在结束时取回本息。
+        IDebtToken jpCoin;          // 借入凭证代币 jp_token的erc20地址 (比如 jpBTC_1..),借款人的凭证。它记录了你的债务，通常只有销毁它（还钱）才能取回抵押的 borrowToken
         uint256 autoLiquidateThreshold; // 自动清算阈值 (触发清算阈值)
     }
     // total base pool.
     PoolBaseInfo[] public poolBaseInfo;
 
-       // 每个池的数据信息
+    // 每个池的数据信息
+    // PoolDataInfo 结构体是专门用来记录池子在不同生命周期节点下的资产快照
     struct PoolDataInfo{
-        uint256 settleAmountLend;       // 结算时的实际出借金额
-        uint256 settleAmountBorrow;     // 结算时的实际借款金额
-        uint256 finishAmountLend;       // 完成时的实际出借金额
-        uint256 finishAmountBorrow;     // 完成时的实际借款金额
-        uint256 liquidationAmounLend;   // 清算时的实际出借金额
-        uint256 liquidationAmounBorrow; // 清算时的实际借款金额
+        // 结算快照 - 募集结束，进入执行期（EXECUTION）那一刻 - 这是计算利息的基数。从这一刻起，池子不再接受新钱，利息开始根据这个实际金额滚动
+        uint256 settleAmountLend;       // 结算时的实际出借金额-- 池子最终募集到了多少钱 比如 maxSupply 是 100 万，但只募集到了 80 万，那么结算时这个值就是 80 万。
+        uint256 settleAmountBorrow;     // 结算时的实际借款金额 -- 借款人实际抵押了多少资产对应的借款额度。
+        
+        // 完成快照 - 借贷到期（endTime），借款人正常还款后 - 用于验证还款是否完整。如果这个金额达到了预期值，池子状态才会转为 FINISH，并释放抵押品给借款人
+        uint256 finishAmountLend;       // 完成时的实际出借金额 -- 此时的金额 = settleAmountLend + 利息。这是出借人（spCoin 持有者）最终可以瓜分的总金额
+        uint256 finishAmountBorrow;     // 完成时的实际借款金额 -- 借款人归还的资金
+        // 清算快照 -- 发生强制清算（LIQUIDATION）那一刻 --  计算亏损率。在极端行情下，抵押品卖出的钱可能覆盖不了本息。通过这个字段，合约可以计算出出借人最后能拿回 $80\%$ 还是 $100\%$ 的本金
+        uint256 liquidationAmounLend;   // 清算时的实际出借金额 -- 清算发生时，由于卖出了抵押品，池子实际收回了多少钱用来补偿出借人。
+        uint256 liquidationAmounBorrow; // 清算时的实际借款金额 -- 被清算时，被强平掉的抵押品数量。
     }
     // total data pool
     PoolDataInfo[] public poolDataInfo;
 
-       // 借款用户信息
+    // 借款用户信息
+    // 用于记录**单个借款人（用户级别）**在特定池子里的资产状态
+    // 在 Web3 借贷中，借款流程往往不是“借了就完事”，而是涉及质押、超额募集处理、到期赎回等多个环节。这两个 bool 变量（hasNoRefund 和 hasNoClaim）本质上是合约的防重领（Anti-Replay）开关。
+    // 开发者使用 hasNoRefund 而不是 isRefunded， 为了节省 Gas 变量默认值是 false
     struct BorrowInfo {
-        uint256 stakeAmount;           // 当前借款的质押金额
-        uint256 refundAmount;          // 多余的退款金额
-        bool hasNoRefund;              // 默认为false，false = 未退款，true = 已退款
-        bool hasNoClaim;               // 默认为false，false = 未认领，true = 已认领
+        uint256 stakeAmount;           // 当前借款的质押金额 -- 用户为了借款而锁定的抵押品数量（即 borrowToken 的数量）。
+        uint256 refundAmount;          // 多余的退款金额 -- 在“超额募集”或“比例配售”逻辑中，借款人原本打算抵押 100 个 BTC 借钱，但因为池子资金额度有限，最终只成交了 80 个 BTC 的借款。剩下的 20 个 BTC 就会记录在 refundAmount 中，等待用户取回
+        bool hasNoRefund;              // 是否已退款 默认为false，false = 未退款，true = 已退款。当池子从 MATCH（匹配）状态进入 EXECUTION（执行）状态时，如果用户提交的抵押品超过了实际借到的钱，这部分“多出来的抵押品”需要退还
+        bool hasNoClaim;               // 是否已认领 默认为false，false = 未认领，true = 已认领。在这种“池子模式”下，借款人在募集期存入抵押品后，并不能立刻拿到借款。必须等到 settleTime（结算时间）过后，确定募集成功了，借款人才能点击“认领”来提取 lendToken
     }
     // Info of each user that stakes tokens.  {user.address : {pool.index : user.borrowInfo}}
     mapping (address => mapping (uint256 => BorrowInfo)) public userBorrowInfo;
 
-      // 借款用户信息
+      // 出借方用户信息
     struct LendInfo {
-        uint256 stakeAmount;          // 当前借款的质押金额
-        uint256 refundAmount;         // 超额退款金额
-        bool hasNoRefund;             // 默认为false，false = 无退款，true = 已退款
-        bool hasNoClaim;              // 默认为false，false = 无索赔，true = 已索赔
+        uint256 stakeAmount;          // 当前借款的质押金额 -- (存入的金额)： 你投入池子的钱（比如 BUSD）。
+        uint256 refundAmount;         // 超额退款金额 -- (超额退款)： 重点在这里。 因为是“固定期限池”，如果大家太热情，存入的总资金超过了借款人需要的上限（maxSupply），那么你多存的那部分钱就匹配不上，需要退给你。
+        bool hasNoRefund;             // 默认为false，false = 无退款，true = 已退款 -- 标记你有没有领回那部分没匹配成功的“闲置资金”。
+        bool hasNoClaim;              // 默认为false，false = 无索赔，true = 已索赔 -- 标记你在借贷结束后，有没有领回你的本金 + 利息。
     }
 
     // Info of each user that stakes tokens.  {user.address : {pool.index : user.lendInfo}}
@@ -371,8 +419,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
 
 
 
-       /**
-     * @dev 借款人质押操作
+    /**
+     * @dev 借款人质押操作 -- 借款人质押资产
      * @param _pid 是池子索引
      * @param _stakeAmount 是用户质押的数量
      */
