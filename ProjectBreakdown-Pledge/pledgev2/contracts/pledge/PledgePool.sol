@@ -209,6 +209,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
     /**
+     * 设置手续费接收地址
      * @dev Set up the address to receive the handling fee
      * @notice Only allow administrators to operate
      */
@@ -219,6 +220,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
     /**
+     * 设置最小存款金额
      * @dev Set the min amount
      */
     function setMinAmount(uint256 _minAmount) validCall external {
@@ -228,6 +230,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
 
 
      /**
+      * 查询池数量
      * @dev Query pool length
      */
     function poolLength() external view returns (uint256) {
@@ -235,7 +238,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
     /**
-     * @dev 创建一个新的借贷池。函数接收一系列参数，包括结算时间、结束时间、利率、最大供应量、抵押率、借款代币、借出代币、SP代币、JP代币和自动清算阈值。
+     * @dev 创建一个新的借贷池。
+     * 函数接收一系列参数，包括结算时间、结束时间、利率、最大供应量、抵押率、借款代币、借出代币、SP代币、JP代币和自动清算阈值。
      *  Can only be called by the owner.
      */
     function createPoolInfo(uint256 _settleTime,  uint256 _endTime, uint64 _interestRate,
@@ -275,7 +279,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
             liquidationAmounBorrow:0
         }));
     }
-      /**
+    /**
+     * 获取池状态
      * @dev Get pool state
      * @notice returned is an int integer
      */
@@ -284,7 +289,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         return uint256(pool.state);
     }
 
-       /**
+    /**
+     * 出借人存款
      * @dev 存款人执行存款操作
      * @notice 池状态必须为MATCH
      * @param _pid 是池索引
@@ -311,7 +317,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         emit DepositLend(msg.sender, pool.lendToken, _stakeAmount, amount);
     }
 
-       /**
+    /**
+     * 退还多余存款给出借人
      * @dev 退还过量存款给存款人
      * @notice 池状态不等于匹配和未完成
      * @param _pid 是池索引
@@ -336,8 +343,9 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         emit RefundLend(msg.sender, pool.lendToken, refundAmount); // 触发退款事件
     }
 
-     /**
-     * @dev 存款人接收 sp_toke,主要功能是让存款人领取 sp_token
+    /**
+     * 出借人领取 spToken 凭证
+     * @dev 存款人接收 sp_token,主要功能是让存款人领取 sp_token
      * @notice 池状态不等于匹配和未完成
      * @param _pid 是池索引
      */
@@ -361,7 +369,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         emit ClaimLend(msg.sender, pool.borrowToken, spAmount); // 触发领取借款事件
     }
 
-        /**
+    /**
+     * 出借人提取本金和利息
      * @dev 存款人取回本金和利息
      * @notice 池的状态可能是完成或清算
      * @param _pid 是池索引
@@ -397,7 +406,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         }
     }
 
-       /**
+    /**
+     * 紧急提取出借资金
      * @dev 紧急提取贷款
      * @notice 池状态必须是未完成
      * @param _pid 是池索引
