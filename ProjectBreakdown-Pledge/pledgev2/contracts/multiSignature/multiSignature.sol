@@ -69,6 +69,8 @@ library whiteListAddress{
 
 contract multiSignature  is multiSignatureClient {
     uint256 private constant defaultIndex = 0;
+    // 给address[] 数组添加whiteListAddress的方法
+    // 这表示任何 address[] 类型的变量都可以调用 whiteListAddress 库中的函数。
     using whiteListAddress for address[];
 
     // 存储所有有权投票的管理员地址
@@ -77,7 +79,7 @@ contract multiSignature  is multiSignatureClient {
     // 最小签名人数。例如，5个管理员中必须有3个签名，此值为 3。
     uint256 public threshold;
     struct signatureInfo {
-        address applicant; // 谁发起的这笔操作申请
+        address applicant; // 谁发起的这笔操作申请 -- 是一个msg.sender和to的hash值
         address[] signatures; // 记录了哪些管理员已经给这笔申请投了赞成票
     }
 
@@ -121,6 +123,7 @@ contract multiSignature  is multiSignatureClient {
     */
     function signApplication(bytes32 msghash) external onlyOwner validIndex(msghash,defaultIndex){
         emit SignApplication(msg.sender,msghash,defaultIndex);
+    
         signatureMap[msghash][defaultIndex].signatures.addWhiteListAddress(msg.sender);
     }
     /*
@@ -128,6 +131,23 @@ contract multiSignature  is multiSignatureClient {
     */
     function revokeSignApplication(bytes32 msghash) external onlyOwner validIndex(msghash,defaultIndex){
         emit RevokeApplication(msg.sender,msghash,defaultIndex);
+
+        /*
+        参数传递是正确的。Solidity 中的语法允许在调用库函数时，将第一个参数（storage 引用）放在调用前，后面跟点号和函数名，然后再传入剩余参数。这相当于：
+        实际调用等价于 whiteListAddress.removeWhiteListAddress(signatureMap[msghash][defaultIndex].signatures, msg.sender);
+        所以虽然看起来只传了一个参数，但实际上 Solidity 会自动将 signatureMap[msghash][defaultIndex].signatures 作为第一个参数传递给库函数。
+
+        这个调用实际上是这样的：
+            signatureMap[msghash][defaultIndex].signatures 是一个 address[] 类型的存储引用
+            通过 using whiteListAddress for address[]，这个数组获得了调用 whiteListAddress 库函数的能力
+            removeWhiteListAddress(msg.sender) 是实际的库函数调用
+            Solidity 会将 signatureMap[msghash][defaultIndex].signatures 作为第一个参数隐式传递给库函数
+        调用者是谁
+            库函数的调用者：是部署了 multiSignature 合约的账户或合约
+            消息发送者（msg.sender）：是调用 revokeSignApplication 函数的管理员地址
+            库函数执行上下文：在 multiSignature 合约的存储上下文中执行
+        所以是 multiSignature 合约在调用库函数，但操作的是特定管理员的签名数据。    
+        */
         signatureMap[msghash][defaultIndex].signatures.removeWhiteListAddress(msg.sender);
     }
     /*
