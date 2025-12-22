@@ -28,7 +28,8 @@ import "../multiSignature/multiSignatureClient.sol";
 
 */
 contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
-
+    // 如果你希望某个业务合约（如借贷池、金库、配置中心）的函数受到多签保护，那么该合约必须继承 multiSignatureClient
+    
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
