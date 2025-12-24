@@ -34,7 +34,7 @@ library whiteListAddress{
         if (i<len){
             if (i!=len-1) {
                 whiteList[i] = whiteList[len-1];
-            }
+            }      
             whiteList.pop();
             return true;
         }
@@ -177,6 +177,15 @@ contract multiSignature  is multiSignatureClient {
     }
     // 生成hash前需要encodePacked
     function getApplicationHash(address from,address to) public pure returns (bytes32) {
+
+        /*
+        目前的哈希生成逻辑确实存在“权限过大”的问题。
+        
+        这个代码里的哈希生成方式其实还是比较粗糙的
+        它的局限性在于： 它没有包含函数签名和具体参数。
+        1、风险： 如果我多签通过了“允许管理员 B 在池子 A 做动作”，那么管理员 B 既可以修改利率，也可以修改清算阈值，因为哈希里没写死他具体要做哪个动作。
+        2、更安全的做法： 应该将 msg.data（包含函数名和参数）也打包进哈希： keccak256(abi.encodePacked(msg.sender, address(this), msg.data))
+        */
         return keccak256(abi.encodePacked(from, to));
     }
 

@@ -97,6 +97,9 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     // total base pool.
     PoolBaseInfo[] public poolBaseInfo;
 
+    // PoolBaseInfo 是规则（利率是多少、什么时候结束）
+    // PoolDataInfo 是结果（最后剩了多少钱、清算回多少钱）。
+    
     // 每个池的数据信息
     // PoolDataInfo 结构体是专门用来记录池子在不同生命周期节点下的资产快照
     struct PoolDataInfo{
