@@ -6,17 +6,20 @@ import "../multiSignature/multiSignatureClient.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 
 /**
+ * 它是一个权限中心（Access Control Center），专门用来管理一组具有 “铸币权（Minter Role）” 的账户地址。
  * @dev Collection of functions related to the address type
  */
 contract AddressPrivileges is multiSignatureClient {
 
     constructor(address multiSignature) multiSignatureClient(multiSignature) public {
     }
-
+    
+    // 利用了 OpenZeppelin 的 EnumerableSet（可枚举集合）来存储地址
     using EnumerableSet for EnumerableSet.AddressSet;
     EnumerableSet.AddressSet private _minters;
 
     /**
+      *  添加一个新的铸币者
       * @notice add a minter
       * @dev function to add a minter for an asset
       * @param _addMinter add a  minter address
@@ -28,6 +31,7 @@ contract AddressPrivileges is multiSignatureClient {
     }
 
     /**
+      * 移除一个现有的铸币者。
       * @notice delete a minter
       * @dev function to delete a minter for an asset
       * @param _delMinter delete a minter address
