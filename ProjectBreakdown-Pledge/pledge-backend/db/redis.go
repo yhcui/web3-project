@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
 	"pledge-backend/config"
 	"pledge-backend/log"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 // InitRedis 初始化Redis
@@ -161,6 +162,7 @@ func RedisFlushDB() error {
 	defer func() {
 		_ = conn.Close()
 	}()
+	// flushdb 只影响当前数据库  清空所有类型数
 	_, err := conn.Do("flushdb")
 	if err != nil {
 		return err

@@ -30,6 +30,14 @@ func NewTokenPrice() *TokenPrice {
 }
 
 // UpdateContractPrice update contract price
+/*
+	更新合约代币价格
+	流程：
+		1、从数据库获取所有代币信息
+		2、根据链ID调用不同网络的价格获取方法
+		3、通过缓存比较判断是否需要更新数据
+		4、将新价格数据保存到数据库
+*/
 func (s *TokenPrice) UpdateContractPrice() {
 	var tokens []models.TokenInfo
 	db.Mysql.Table("token_info").Find(&tokens)

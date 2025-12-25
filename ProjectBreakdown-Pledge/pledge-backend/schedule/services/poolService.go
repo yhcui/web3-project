@@ -21,6 +21,10 @@ func NewPool() *poolService {
 	return &poolService{}
 }
 
+/*
+主要用于从区块链合约中获取并更新借贷池的信息。
+更新所有池信息
+*/
 func (s *poolService) UpdateAllPoolInfo() {
 
 	s.UpdatePoolInfo(config.Config.TestNet.PledgePoolToken, config.Config.TestNet.NetUrl, config.Config.TestNet.ChainId)
@@ -32,24 +36,28 @@ func (s *poolService) UpdateAllPoolInfo() {
 func (s *poolService) UpdatePoolInfo(contractAddress, network, chainId string) {
 
 	log.Logger.Sugar().Info("UpdatePoolInfo ", contractAddress+" "+network)
+	// 连接以太坊网络
 	ethereumConn, err := ethclient.Dial(network)
 	if nil != err {
 		log.Logger.Error(err.Error())
 		return
 	}
+
+	// 初始化合约实例
 	pledgePoolToken, err := bindings.NewPledgePoolToken(common.HexToAddress(contractAddress), ethereumConn)
 	if nil != err {
 		log.Logger.Error(err.Error())
 		return
 	}
 
+	// 借贷手续费
 	// borrowFee
 	borrowFee, err := pledgePoolToken.PledgePoolTokenCaller.BorrowFee(nil)
 
 	// lendFee
 	lendFee, err := pledgePoolToken.PledgePoolTokenCaller.LendFee(nil)
 
-	//poolLength
+	//poolLength 池总数
 	pLength, err := pledgePoolToken.PledgePoolTokenCaller.PoolLength(nil)
 	if nil != err {
 		log.Logger.Error(err.Error())
@@ -60,12 +68,13 @@ func (s *poolService) UpdatePoolInfo(contractAddress, network, chainId string) {
 
 		log.Logger.Sugar().Info("UpdatePoolInfo ", i)
 		poolId := utils.IntToString(i + 1)
+		// 获取池基础信息，包括抵押率、利率、供应量等
 		baseInfo, err := pledgePoolToken.PledgePoolTokenCaller.PoolBaseInfo(nil, big.NewInt(int64(i)))
 		if err != nil {
 			log.Logger.Sugar().Info("UpdatePoolInfo PoolBaseInfo err", poolId, err)
 			continue
 		}
-
+		// 获取借贷代币信息 构建JSON数据
 		_, borrowToken := models.NewTokenInfo().GetTokenInfo(baseInfo.BorrowToken.String(), chainId)
 		_, lendToken := models.NewTokenInfo().GetTokenInfo(baseInfo.LendToken.String(), chainId)
 
@@ -104,9 +113,10 @@ func (s *poolService) UpdatePoolInfo(contractAddress, network, chainId string) {
 			AutoLiquidateThreshold: baseInfo.AutoLiquidateThreshold.String(),
 		}
 
+		// 根据需要存储的poolbase生成缓存Key,使用MD5缓存机制避免重复更新
 		hasInfoData, byteBaseInfoStr, baseInfoMd5Str := s.GetPoolMd5(&poolBase, "base_info:pool_"+chainId+"_"+poolId)
 		if !hasInfoData || (baseInfoMd5Str != byteBaseInfoStr) { // have new data
-			//tokenInfo
+			//tokenInfo 保存池基础信息到数据库
 			err = models.NewPoolBase().SavePoolBase(chainId, poolId, &poolBase)
 			if err != nil {
 				log.Logger.Sugar().Error("SavePoolBase err ", chainId, poolId)
@@ -132,6 +142,7 @@ func (s *poolService) UpdatePoolInfo(contractAddress, network, chainId string) {
 				SettleAmountBorrow:     dataInfo.SettleAmountBorrow.String(),
 				SettleAmountLend:       dataInfo.SettleAmountLend.String(),
 			}
+			// 保存池数据到数据库
 			err = models.NewPoolData().SavePoolData(chainId, poolId, &poolData)
 			if err != nil {
 				log.Logger.Sugar().Error("SavePoolData err ", chainId, poolId)
