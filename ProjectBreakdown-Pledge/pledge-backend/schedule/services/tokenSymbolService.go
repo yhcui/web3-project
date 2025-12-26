@@ -73,6 +73,7 @@ func (s *TokenSymbol) UpdateContractSymbol() {
 }
 
 // GetRemoteAbiFileByToken get and save remote abi file on main net
+// 从区块链浏览器 API 获取智能合约的 ABI（Application Binary Interface）文件并保存到本地。
 func (s *TokenSymbol) GetRemoteAbiFileByToken(token, chainId string) error {
 
 	// url := "https://api.bscscan.com/api?module=contract&action=getabi&apikey=HJ3WS4N88QJ6S7PQ8D89BD49IZIFP1JFER&address=" + token
@@ -84,9 +85,10 @@ func (s *TokenSymbol) GetRemoteAbiFileByToken(token, chainId string) error {
 		log.Logger.Error(err.Error())
 		return err
 	}
-
+	// 使用 FormatAbiJsonStr 方法格式化 JSON 字符串
 	resStr := s.FormatAbiJsonStr(string(res))
 
+	//解析返回的 JSON 数据到 AbiJson 结构体
 	abiJson := models.AbiJson{}
 	err = json.Unmarshal([]byte(resStr), &abiJson)
 	if err != nil {
@@ -105,15 +107,16 @@ func (s *TokenSymbol) GetRemoteAbiFileByToken(token, chainId string) error {
 		log.Logger.Error(err.Error())
 		return err
 	}
-
+	//构建本地 ABI 文件路径
 	newAbiFile := abifile.GetCurrentAbPathByCaller() + "/" + token + ".abi"
 
+	//将 ABI 数据写入本地文件，设置权限为 0777
 	err = os.WriteFile(newAbiFile, abiJsonBytes, 0777)
 	if err != nil {
 		log.Logger.Error(err.Error())
 		return err
 	}
-
+	//更新 token_info 表中对应记录的 abi_file_exist 字段为 1
 	err = db.Mysql.Table("token_info").Where("token=? and chain_id=?", token, chainId).Updates(map[string]interface{}{
 		"abi_file_exist": 1,
 	}).Debug().Error
@@ -182,6 +185,28 @@ func (s *TokenSymbol) GetContractSymbolOnTestNet(token, network string) (error, 
 		log.Logger.Sugar().Error("GetContractSymbolOnMainNet err ", token, err)
 		return err, ""
 	}
+	/*
+		是Go Ethereum (geth) 库中用于创建已绑定合约实例的方法，用于与区块链上的智能合约进行交互
+		1.合约地址 (common.Address)
+			common.HexToAddress(token) - 将十六进制地址字符串转换为以太坊地址类型
+			指定要绑定的智能合约在区块链上的地址
+		2.ABI 解析结果 (abi.ABI)
+			parsed - 通过 abi.JSON() 解析 ABI 文件得到的合约接口定义
+			包含合约的所有函数、事件和状态变量定义
+		3. 以太坊客户端 (bind.ContractBackend)
+		ethereumConn - 以太坊节点连接实例
+			提供了三种客户端类型：
+			调用客户端：用于查询合约状态
+			交易客户端：用于发送交易
+			事件客户端：用于监听合约事件
+		返回值
+		contract：绑定的合约实例，可用于调用合约方法
+		error：错误信息
+		使用场景
+			合约方法调用：通过 contract.Call() 调用只读方法
+			交易发送：通过 contract.Transact() 发送交易修改合约状态
+			事件监听：通过 contract.WatchLogs() 监听合约事件
+	*/
 	contract, err := bind.NewBoundContract(common.HexToAddress(token), parsed, ethereumConn, ethereumConn, ethereumConn), nil
 	if err != nil {
 		log.Logger.Sugar().Error("GetContractSymbolOnMainNet err ", token, err)
@@ -189,6 +214,7 @@ func (s *TokenSymbol) GetContractSymbolOnTestNet(token, network string) (error, 
 	}
 
 	res := make([]interface{}, 0)
+	// 调用合约的 symbol 函数
 	err = contract.Call(nil, &res, "symbol")
 	if err != nil {
 		log.Logger.Sugar().Error("GetContractSymbolOnMainNet err ", token, err)

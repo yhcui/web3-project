@@ -20,6 +20,12 @@ func NewTokenLogo() *TokenLogo {
 	return &TokenLogo{}
 }
 
+// 一个用于管理和更新代币图标，负责从远程和本地获取代币的 logo、symbol、decimals 等信息，并存储到 Redis 和 MySQL 数据库中。
+/*
+ 从远程 URL 获取代币 logo 数据
+	遍历远程数据，检查并保存新数据到 Redis 和 MySQL
+	更新本地代币 logo 数据（本地数据权重更高）
+*/
 func (s *TokenLogo) UpdateTokenLogo() {
 
 	// update remote logo
@@ -52,6 +58,7 @@ func (s *TokenLogo) UpdateTokenLogo() {
 	}
 
 	//update local logo,Local logos have high weight,so execute later, local logos are divided by name
+	// LocalTokenLogo - 存储本地预定义的代币 logo 数据
 	for _, v := range LocalTokenLogo {
 		for _, t := range v {
 			if t["token"] == "" {
@@ -170,6 +177,7 @@ func GetBaseUrl() string {
 
 var BaseUrl = GetBaseUrl()
 
+// 代币符号 -> 网络类型 -> 代币信息
 var LocalTokenLogo = map[string]map[string]map[string]string{
 	"BNB": {
 		"test_net": {

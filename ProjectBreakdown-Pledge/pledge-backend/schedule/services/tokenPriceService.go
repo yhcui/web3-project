@@ -51,6 +51,7 @@ func (s *TokenPrice) UpdateContractPrice() {
 			continue
 		} else {
 			if t.ChainId == config.Config.TestNet.ChainId {
+				//获取测试网代币价格
 				err, price = s.GetTestNetTokenPrice(t.Token)
 			} else if t.ChainId == "56" {
 				// if strings.ToUpper(t.Token) == config.Config.MainNet.PlgrAddress { // get PLGR price from ku-coin(Only main network price)
@@ -72,7 +73,7 @@ func (s *TokenPrice) UpdateContractPrice() {
 				continue
 			}
 		}
-
+		// 保存价格数据到缓存
 		hasNewData, err := s.CheckPriceData(t.Token, t.ChainId, utils.Int64ToString(price))
 		if err != nil {
 			log.Logger.Sugar().Error("UpdateContractPrice CheckPriceData err ", err)
@@ -136,10 +137,12 @@ func (s *TokenPrice) GetTestNetTokenPrice(token string) (error, int64) {
 }
 
 // CheckPriceData Saving price data to redis if it has new price
+// 检查价格数据是否有更新，使用Redis缓存避免重复更新
 func (s *TokenPrice) CheckPriceData(token, chainId, price string) (bool, error) {
 	redisKey := "token_info:" + chainId + ":" + token
 	redisTokenInfoBytes, err := db.RedisGet(redisKey)
 	if len(redisTokenInfoBytes) <= 0 {
+		//检查代币信息是否存在，不存在则创建
 		err = s.CheckTokenInfo(token, chainId)
 		if err != nil {
 			log.Logger.Error(err.Error())
@@ -176,6 +179,7 @@ func (s *TokenPrice) CheckPriceData(token, chainId, price string) (bool, error) 
 }
 
 // CheckTokenInfo  Insert token information if it was not in mysql
+// 检查代币信息是否存在，不存在则创建
 func (s *TokenPrice) CheckTokenInfo(token, chainId string) error {
 	tokenInfo := models.TokenInfo{}
 	err := db.Mysql.Table("token_info").Where("token=? and chain_id=?", token, chainId).First(&tokenInfo).Debug().Error
@@ -271,26 +275,30 @@ func (s *TokenPrice) SavePlgrPrice() {
 }
 
 // SavePlgrPriceTestNet  Saving price data to mysql if it has new price
+// 测试网设置PLGR代币价格（使用固定价格22222）
 func (s *TokenPrice) SavePlgrPriceTestNet() {
 
 	price := 22222
+	// 接到测试网 (config.Config.TestNet.NetUrl)
 	ethereumConn, err := ethclient.Dial(config.Config.TestNet.NetUrl)
 	if nil != err {
 		log.Logger.Error(err.Error())
 		return
 	}
+	// 连接测试网预言机合约
 	bscPledgeOracleTestNetToken, err := bindings.NewBscPledgeOracleMainnetToken(common.HexToAddress(config.Config.TestNet.BscPledgeOracleToken), ethereumConn)
 	if nil != err {
 		log.Logger.Error(err.Error())
 		return
 	}
 
+	//进行交易签名
 	privateKeyEcdsa, err := crypto.HexToECDSA(serviceCommon.PlgrAdminPrivateKey)
 	if err != nil {
 		log.Logger.Error(err.Error())
 		return
 	}
-
+	// 使用测试网链ID创建交易授权器
 	auth, err := bind.NewKeyedTransactorWithChainID(privateKeyEcdsa, big.NewInt(utils.StringToInt64(config.Config.TestNet.ChainId)))
 	if err != nil {
 		log.Logger.Error(err.Error())
@@ -312,11 +320,12 @@ func (s *TokenPrice) SavePlgrPriceTestNet() {
 		Context:   ctx,
 		NoSend:    false, // Do all transact steps but do not send the transaction
 	}
-
+	// 更新测试网预言机合约中 PLGR 代币的价格
 	_, err = bscPledgeOracleTestNetToken.SetPrice(&transactOpts, common.HexToAddress(config.Config.TestNet.PlgrAddress), big.NewInt(int64(price)))
 
 	log.Logger.Sugar().Info("SavePlgrPrice ", err)
 
+	//方法获取的价格信息
 	a, d := s.GetTestNetTokenPrice(config.Config.TestNet.PlgrAddress)
 	fmt.Println(a, d, 5555)
 }

@@ -54,7 +54,15 @@ func (s *BalanceMonitor) Monitor() {
 	// }
 }
 
+// 通过以太坊客户端连接区块链获取指定地址的余额
 // GetBalance get balance of ERC20 token
+//
+//	@Description:
+//	@receiver s
+//	@param netUrl  区块链节点 URL
+//	@param token 代币地址
+//	@return *big.Int
+//	@return error
 func (s *BalanceMonitor) GetBalance(netUrl, token string) (*big.Int, error) {
 
 	ethereumClient, err := ethclient.Dial(netUrl)
@@ -74,6 +82,15 @@ func (s *BalanceMonitor) GetBalance(netUrl, token string) (*big.Int, error) {
 }
 
 // EmailBody email body
+//
+//	@Description:
+//	@receiver s
+//	@param token
+//	@param currency
+//	@param balance
+//	@param threshold
+//	@return []byte
+//	@return error
 func (s *BalanceMonitor) EmailBody(token, currency, balance, threshold string) ([]byte, error) {
 	e18, err := decimal.NewFromString("1000000000000000000")
 	if err != nil {

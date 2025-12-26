@@ -6,6 +6,7 @@ import (
 	"runtime"
 )
 
+// 根据代币名称读取对应的 ABI 文件内容
 func GetAbiByToken(token string) (string, error) {
 	currentAbPath := GetCurrentAbPathByCaller()
 	by, err := os.ReadFile(currentAbPath + "/" + token + ".abi")
