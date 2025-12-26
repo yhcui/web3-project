@@ -3,12 +3,13 @@ package ws
 import (
 	"encoding/json"
 	"errors"
-	"github.com/gorilla/websocket"
 	"pledge-backend/api/models/kucoin"
 	"pledge-backend/config"
 	"pledge-backend/log"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 const SuccessCode = 0
@@ -56,14 +57,23 @@ func (s *Server) ReadAndWrite() {
 
 	errChan := make(chan error)
 
+	// 将当前服务器实例存储到 Manager.Servers 中
 	Manager.Servers.Store(s.Id, s)
 
+	//延迟清理: 在方法结束时：1、从服务器管理器中删除当前实例 2、关闭 WebSocket连接 3、关闭发送通道
 	defer func() {
 		Manager.Servers.Delete(s)
 		_ = s.Socket.Close()
 		close(s.Send)
 	}()
 
+	/*
+		并发写操作 (goroutine 1)
+			通道监听: 持续监听 s.Send 通道
+			消息发送: 将接收到的消息通过 SendToClient 方法发送给客户端
+			错误处理: 当通道关闭时发送错误信号到 errChan
+
+	*/
 	//write
 	go func() {
 		for {
@@ -78,6 +88,12 @@ func (s *Server) ReadAndWrite() {
 		}
 	}()
 
+	/*
+	   并发读操作 (goroutine 2)
+	   消息读取: 持续从 WebSocket 连接读取消息
+	   心跳处理: 检测 "ping" 消息并回复 "pong"，更新 LastTime 时间戳
+	   错误处理: 读取错误时发送错误信号到 errChan
+	*/
 	//read
 	go func() {
 		for {
@@ -99,6 +115,12 @@ func (s *Server) ReadAndWrite() {
 		}
 	}()
 
+	/*
+		心跳检测主循环
+			定时检查: 每秒检查一次连接状态
+			超时判断: 如果最后活动时间超过 UserPingPongDurTime 配置值，发送错误代码并返回
+			错误响应: 监听错误通道，收到错误时记录日志并返回
+	*/
 	//check heartbeat
 	for {
 		select {
