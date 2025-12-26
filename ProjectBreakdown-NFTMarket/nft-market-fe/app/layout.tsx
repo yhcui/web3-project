@@ -10,7 +10,7 @@ import ClientLayout from './client-layout'
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "RCC - NFT Marketplace",
+  title: "NFT Marketplace",
   description: "Trade NFT collections",
 }
 

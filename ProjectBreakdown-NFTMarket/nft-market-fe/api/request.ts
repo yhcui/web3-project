@@ -16,6 +16,5 @@ request.interceptors.request.use(config => {
 });
 
 request.interceptors.response.use(response => {
-    console.log(response, 'response==response');
     return response.data.data;
 });

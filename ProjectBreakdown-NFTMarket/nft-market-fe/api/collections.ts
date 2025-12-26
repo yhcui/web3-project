@@ -28,7 +28,7 @@ type GetCollectionItemsParams = {
         sort: number;
         status: number[];
         markets: string[];
-        token_id: string;
+        token_id?: string;
         user_address: string;
         chain_id: string | number;
         page: number;
@@ -45,9 +45,18 @@ function GetCollectionItems(params: GetCollectionItemsParams) {
     });
 };
 
+function getCollectionItemDetail(address: string, token_id: string, chain_id: string | number) {
+    return request.get(`/collections/${address}/${token_id}`, {
+        params: {
+            chain_id: chain_id,
+        },
+    });
+};
+
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
     GetCollections,
     GetCollectionDetail,
-    GetCollectionItems
+    GetCollectionItems,
+    getCollectionItemDetail
 };

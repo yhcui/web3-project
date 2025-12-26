@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button"
+import { getAvatarUrl } from "@/lib/utils"
 
 const recentSales = [
   { time: "1年", price: "0.005", buyer: "mie_no..." },
@@ -23,7 +24,16 @@ export function RecentActivity() {
         {recentSales.map((sale, i) => (
           <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-accent">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-muted rounded-full" />
+              <img
+                src={getAvatarUrl(sale.buyer)}
+                alt={sale.buyer}
+                className="w-8 h-8 rounded-full object-cover"
+                onError={(e) => {
+                  // 如果头像加载失败，使用默认占位符
+                  const target = e.target as HTMLImageElement;
+                  target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`;
+                }}
+              />
               <div>
                 <div className="text-sm">{sale.buyer}</div>
                 <div className="text-xs text-muted-foreground">{sale.time}</div>

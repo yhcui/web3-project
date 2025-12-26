@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -7,7 +6,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/v1/:path*",
-        destination: "http://45.249.209.63:9988/api/v1/:path*", // 开发环境
+        destination: "http://180.96.6.32:9988/api/v1/:path*", // 开发环境
       },
     ];
   },
@@ -23,18 +22,20 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  i18n: {
-    locales: ["en-US", "zh-CN"],
-    defaultLocale: "en-US",
-    localeDetection: false,
-  },
+  // i18n 配置在 App Router 中不再支持，需通过中间件或组件处理
+  // eslint 配置在 next.config.ts 中已废弃，默认会检查
+
   typescript: {
     ignoreBuildErrors: true,
   },
-
-  // 关闭 ESLint
-  eslint: {
-    ignoreDuringBuilds: true,
+  
+  // 尝试解决 pino/thread-stream 的构建问题
+  transpilePackages: ['pino', 'thread-stream', '@rainbow-me/rainbowkit', 'wagmi'],
+  
+  // 如果还有问题，可以尝试 webpack 配置兜底（但在 turbopack 模式下可能无效）
+  webpack: (config) => {
+    config.externals.push('pino-pretty', 'lokijs', 'encoding');
+    return config;
   },
 
   output: "standalone",

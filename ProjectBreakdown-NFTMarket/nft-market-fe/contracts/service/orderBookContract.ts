@@ -188,8 +188,10 @@ export async function makeOrders(
         }
 
         // 调用合约方法
+        // 处理value参数：如果是字符串（ETH值），转换为bigint（wei）
+        const value = options.value ? parseEther(options.value) : parseEther('0');
         const tx = await contract.makeOrders(orders, {
-            value: options.value || parseEther('0'),
+            value: value,
         });
 
         // 等待交易确认

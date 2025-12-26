@@ -14,7 +14,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <QueryClientProvider client={client}>
             <RainbowKitProvider>
                 <NavBar />
-                {children}
+                <div className="pt-[73px]">
+                    {children}
+                </div>
             </RainbowKitProvider>
         </QueryClientProvider>
     </WagmiProvider>)
