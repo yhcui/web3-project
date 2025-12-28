@@ -9,7 +9,10 @@ import {RedBlackTreeLibrary, Price} from "./libraries/RedBlackTreeLibrary.sol";
 import {LibOrder, OrderKey} from "./libraries/LibOrder.sol";
 
 error CannotInsertDuplicateOrder(OrderKey orderKey);
-
+/*
+数据存储层
+利用 红黑树 (Red-Black Tree) 库来管理价格 (priceTrees)，并配合链表 (orderQueues) 来实现同一价格水平下的时间优先顺序
+*/
 contract OrderStorage is Initializable {
     using RedBlackTreeLibrary for RedBlackTreeLibrary.Tree;
 

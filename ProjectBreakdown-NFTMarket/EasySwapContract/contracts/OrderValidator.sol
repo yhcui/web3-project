@@ -9,6 +9,7 @@ import {Price} from "./libraries/RedBlackTreeLibrary.sol";
 import {LibOrder, OrderKey} from "./libraries/LibOrder.sol";
 
 /**
+ * 负责验证订单的有效性（如过期检查、签名验证等），并记录订单的成交状态 (filledAmount)
  * @title Verify the validity of the order parameters.
  */
 abstract contract OrderValidator is
@@ -20,6 +21,35 @@ abstract contract OrderValidator is
 
     uint256 private constant CANCELLED = type(uint256).max;
 
+    /*
+    filledAmount 是一个非常关键的状态变量。它主要承担两个核心职责：防止订单重放（幂等性检查） 和 追踪成交进度
+    1、防止重复挂单 (Replay Protection)
+    这是在 makeOrders 阶段最直接的作用。
+
+    逻辑：系统通过 LibOrder.hash(order) 计算出订单的唯一标识 OrderKey。
+
+    检查：在创建新订单前，合约会检查 filledAmount[orderKey]。
+
+    目的：如果这个位置已经有值（比如大于 0 或等于 CANCELLED 常量），说明一个完全相同的订单（相同的 maker、价格、salt 等）已经存在于系统中了。此时 _makeOrderTry 会返回 SENTINEL（零值），防止同一个订单被多次插入红黑树，从而导致账目混乱。
+    
+    2、追踪成交进度 (Fill Tracking)
+    虽然名字叫 filledAmount（已成交数量），但它实际上记录了该订单已经“消耗”了多少额度。
+
+    对于 ERC721（数量通常为 1）：
+
+    0：代表订单全新，尚未成交。
+
+    1：代表订单已完全成交，不能再被匹配。
+
+    对于多数量资产（如 ERC1155 或类似逻辑）：它记录了已经买走/卖走了多少个。当 filledAmount 达到 order.nft.amount 时，该订单被视为“完成 (Closed)”。
+        
+    3、处理取消状态 (Cancellation)
+    在 OrderValidator.sol 中，你可以看到一个特殊的常量： uint256 private constant CANCELLED = type(uint256).max;
+
+    当用户手动取消订单时，合约会将 filledAmount[orderKey] 设置为这个最大值。
+
+    在 _makeOrderTry 或 matchOrder 中，只要发现 filledAmount 是这个特殊值，系统就会知道该订单已失效，从而拒绝任何操作。
+    */
     // fillsStat record orders filled status, key is the order hash,
     // and value is filled amount.
     // Value CANCELLED means the order has been canceled.

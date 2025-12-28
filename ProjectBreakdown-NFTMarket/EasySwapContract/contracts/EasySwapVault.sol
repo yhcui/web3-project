@@ -7,7 +7,10 @@ import {LibTransferSafeUpgradeable, IERC721} from "./libraries/LibTransferSafeUp
 import {LibOrder, OrderKey} from "./libraries/LibOrder.sol";
 
 import {IEasySwapVault} from "./interface/IEasySwapVault.sol";
-
+/*
+(资产托管层)：专门负责托管用户存入的 ETH 和 NFT 资产。
+它充当“保险库”，仅允许授权的 OrderBook 合约进行资产划转，确保了资产安全性
+*/
 contract EasySwapVault is IEasySwapVault, OwnableUpgradeable {
     using LibTransferSafeUpgradeable for address;
     using LibTransferSafeUpgradeable for IERC721;

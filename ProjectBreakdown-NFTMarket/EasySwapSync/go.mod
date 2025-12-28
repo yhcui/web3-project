@@ -2,7 +2,7 @@ module github.com/ProjectsTask/EasySwapSync
 
 go 1.21
 
-//replace github.com/ProjectsTask/EasySwapBase => ../EasySwapBase
+replace github.com/ProjectsTask/EasySwapBase => ../EasySwapBase
 
 require (
 	github.com/ProjectsTask/EasySwapBase v0.0.0-20250106031001-016480cecbd5

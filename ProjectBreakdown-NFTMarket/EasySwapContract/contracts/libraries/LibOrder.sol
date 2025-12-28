@@ -3,22 +3,32 @@ pragma solidity ^0.8.19;
 
 import {Price} from "./RedBlackTreeLibrary.sol";
 
+// 通过对订单参数进行哈希处理生成的唯一标识符（bytes32），用于在 OrderStorage 中检索订单
 type OrderKey is bytes32;
 
 library LibOrder {
+    // 买卖方向 (Side)
     enum Side {
-        List,
-        Bid
+        List, // 挂单 (List)：卖家创建订单时，NFT 会直接转入 EasySwapVault 进行托管
+        Bid // 报价 (Bid)：买家创建订单时，需要存入相应数额的 ETH 到 Vault
     }
 
+    // 交易类型 (SaleKind)
     enum SaleKind {
-        FixedPriceForCollection,
-        FixedPriceForItem
+        /*
+        卖单 (List)：（较少见）表示卖家愿意以该价格出售该系列中的任意一个 NFT。
+        买单 (Bid)：这是该模式最核心的用法。买家发布一个报价，表示：“只要是这个系列的 NFT，无论编号是多少，我都愿意以 X 价格买入一个”。
+        撮合逻辑：在 OrderStorage.sol 的代码中可以看到，当交易类型为 FixedPriceForCollection 时，系统在搜索最优订单时会跳过对 tokenId 的严格匹配。只要卖家持有该系列中的任意一个 Token，就可以接受这个买单。
+        */
+        FixedPriceForCollection,  // 针对整个系列的固定价格 称为 “系列报价” (Collection Offer) 或 “扫地板” 模式。
+        FixedPriceForItem // 针对特定物品的固定价格
     }
 
+// 资产信息 (Asset)
     struct Asset {
         uint256 tokenId;
-        address collection;
+        // 在区块链上，区分两个 NFT 是否属于同一个系列，唯一的标准就是它们的 collection 地址是否相同。
+        address collection; // NFT 所属的智能合约地址
         uint96 amount;
     }
 
@@ -30,7 +40,7 @@ library LibOrder {
     struct Order {
         Side side;
         SaleKind saleKind;
-        address maker;
+        address maker; // 挂单者 / 创建者
         Asset nft;
         Price price; // unit price of nft
         uint64 expiry;

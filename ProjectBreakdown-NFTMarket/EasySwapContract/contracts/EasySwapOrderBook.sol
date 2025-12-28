@@ -18,7 +18,12 @@ import {IEasySwapVault} from "./interface/IEasySwapVault.sol";
 import {OrderStorage} from "./OrderStorage.sol";
 import {OrderValidator} from "./OrderValidator.sol";
 import {ProtocolManager} from "./ProtocolManager.sol";
+/*
+这是用户的主要入口。
+它集成了订单存储、验证和协议管理功能。
+主要负责订单的创建 (makeOrders)、取消 (cancelOrders)、编辑 (editOrders) 以及撮合交易 (matchOrder, matchOrders)。
 
+*/
 contract EasySwapOrderBook is
     IEasySwapOrderBook,
     Initializable,
@@ -101,10 +106,17 @@ contract EasySwapOrderBook is
         );
     }
 
+    // 这四个参数共同完成了合约的资产路径设置（Vault）、盈利模式配置（ProtocolShare）以及交易安全校验体系（EIP712 的名称和版本）
     function __EasySwapOrderBook_init_unchained(
-        uint128 newProtocolShare,
-        address newVault,
-        string memory EIP712Name,
+        uint128 newProtocolShare, // 协议手续费比例
+        address newVault, // 金库地址
+
+        // EIP-712 域名 用于结构化数据签名的项目名称（例如 "EasySwap"） 它是 OrderValidator 中签名校验逻辑的一部分。
+        // 在用户签名订单时，该名称会包含在签名哈希中，防止签名在不同项目间被“重放攻击”。
+        string memory EIP712Name, 
+
+        // EIP-712 版本号
+        // 配合 EIP712Name 使用，确保当合约逻辑发生重大升级或版本更迭时，旧版本的签名不会在当前新版本的合约中生效，增强安全性
         string memory EIP712Version
     ) internal onlyInitializing {
         __Context_init();
@@ -130,6 +142,11 @@ contract EasySwapOrderBook is
      * @param newOrders Multiple order structure data.
      * @return newOrderKeys The unique id of the order is returned in order, if the id is empty, the corresponding order was not created correctly.
      */
+    /*
+        输入：一个 Order 结构体数组，允许用户一次性批量挂出多个订单（节省 Gas）。
+        输出：返回一个 OrderKey 数组，这是每个订单在系统中的唯一 ID（由订单参数哈希而成）。
+        修饰符：payable（因为创建买单需要发送 ETH），nonReentrant（防重入），whenNotPaused（暂停检查）。
+    */
     function makeOrders(
         LibOrder.Order[] calldata newOrders
     )
@@ -143,10 +160,13 @@ contract EasySwapOrderBook is
         uint256 orderAmount = newOrders.length;
         newOrderKeys = new OrderKey[](orderAmount);
 
+        // 计算买单总的价格
         uint128 ETHAmount; // total eth amount
         for (uint256 i = 0; i < orderAmount; ++i) {
+            // 计算买单中一个订单的价格
             uint128 buyPrice; // the price of bid order
             if (newOrders[i].side == LibOrder.Side.Bid) {
+                // 单价*数量
                 buyPrice =
                     Price.unwrap(newOrders[i].price) *
                     newOrders[i].nft.amount;
@@ -162,7 +182,8 @@ contract EasySwapOrderBook is
                 ETHAmount += buyPrice;
             }
         }
-
+        // 多退机制
+        // 这里没有少补机制，原因在 _makeOrderTry 中，内部会调用 Vault.depositETH，如果 msg.value 不足以支撑已尝试创建的买单，那里的底层调用会直接 revert
         if (msg.value > ETHAmount) {
             // return the remaining eth，if the eth is not enough, the transaction will be reverted
             _msgSender().safeTransferETH(msg.value - ETHAmount);
@@ -224,6 +245,7 @@ contract EasySwapOrderBook is
         }
     }
 
+    // 单笔撮合
     function matchOrder(
         LibOrder.Order calldata sellOrder,
         LibOrder.Order calldata buyOrder
@@ -244,6 +266,7 @@ contract EasySwapOrderBook is
      * @dev    nft and price values are the same as buyOrder, sellOrder.expiry > block.timestamp, sellOrder.salt != 0;
      * @param matchDetails Array of `MatchDetail` structs containing the details of sell and buy order to be matched.
      */
+    // 批量撮合
     /// @custom:oz-upgrades-unsafe-allow delegatecall
     function matchOrders(
         LibOrder.MatchDetail[] calldata matchDetails
@@ -303,7 +326,24 @@ contract EasySwapOrderBook is
     {
         costValue = _matchOrder(sellOrder, buyOrder, msgValue);
     }
+    /*
+    在 _makeOrderTry 的执行路径中，filledAmount 并不是主要的拦截防线，真正的“大闸”是 OrderStorage 中的订单内容检查（即你提到的 maker != address(0)）。
+    1、 为什么 filledAmount 在创建时没有被修改？
+        在你的合约架构中：
+        OrderValidator (定义了 filledAmount)：它的职责是校验订单的有效性（是否被取消、是否成交过、签名是否正确）。在 makeOrders 阶段，它只负责读，不负责写。
+        OrderStorage (定义了 orders)：它的职责是负责订单的存储与持久化。
+        对于一个从未出现过的 orderKey，其 filledAmount 默认为 0 是正确的。如果你连续调用两次 makeOrders 传入完全相同的订单，第一次调用时该值为 0，第二次调用时由于代码没有去写它，它依然是 0。
+        所以，单纯靠 filledAmount == 0 确实拦不住重复挂单。
+    2、真正的拦截：OrderStorage.sol
+      当你调用 _makeOrderTry 时，它最终会尝试将订单写入存储。
 
+    3、filledAmount 的真正作用是什么？
+        既然创建时不改它，为什么要检查它？它的作用在于**“全生命周期覆盖”**：
+
+        防重开：如果一个订单曾经成交了（filledAmount > 0）或者被取消了（filledAmount = MAX），即便该订单后来因为某种原因从红黑树中剔除了，filledAmount 也会永久记录该 ID 已失效。
+
+        防篡改：它主要配合 matchOrder 使用。
+    */
     function _makeOrderTry(
         LibOrder.Order calldata order,
         uint128 ETHAmount
@@ -313,12 +353,15 @@ contract EasySwapOrderBook is
             Price.unwrap(order.price) != 0 && // price cannot be zero
             order.salt != 0 && // salt cannot be zero
             (order.expiry > block.timestamp || order.expiry == 0) && // expiry must be greater than current block timestamp or no expiry
-            filledAmount[LibOrder.hash(order)] == 0 // order cannot be canceled or filled
+            filledAmount[LibOrder.hash(order)] == 0 // order cannot be canceled or filled。防止重复挂单 (Replay Protection)
+            
         ) {
+            // 计算出订单的唯一标识 OrderKey
             newOrderKey = LibOrder.hash(order);
 
             // deposit asset to vault
             if (order.side == LibOrder.Side.List) {
+                // 如果是 List (卖单)：调用 Vault.depositNFT，把 NFT 从用户手里存入金库
                 if (order.nft.amount != 1) {
                     // limit list order amount to 1
                     return LibOrder.ORDERKEY_SENTINEL;
@@ -333,12 +376,14 @@ contract EasySwapOrderBook is
                 if (order.nft.amount == 0) {
                     return LibOrder.ORDERKEY_SENTINEL;
                 }
+                // 如果是 Bid (买单)：调用 Vault.depositETH，把 ETH 锁定在金库中对应的 orderKey 下。
                 IEasySwapVault(_vault).depositETH{value: uint256(ETHAmount)}(
                     newOrderKey,
                     ETHAmount
                 );
             }
 
+            // 将订单存入 OrderStorage 的红黑树和队列中。
             _addOrder(order);
 
             emit LogMake(
@@ -399,6 +444,7 @@ contract EasySwapOrderBook is
         LibOrder.Order memory oldOrder = orders[oldOrderKey].order;
 
         // check order, only the price and amount can be modified
+        // 校验旧订单：确保旧订单的 maker 是当前的调用者，且该订单目前处于活跃状态（未成交、未取消）。
         if (
             (oldOrder.saleKind != newOrder.saleKind) ||
             (oldOrder.side != newOrder.side) ||
@@ -412,6 +458,7 @@ contract EasySwapOrderBook is
         }
 
         // check new order is valid
+        // 校验新订单：确保新订单的 maker 是当前的调用者，且该订单目前处于活跃状态（未成交、未取消）。
         if (
             newOrder.maker != _msgSender() ||
             newOrder.salt == 0 ||
@@ -424,21 +471,28 @@ contract EasySwapOrderBook is
 
         // cancel old order
         uint256 oldFilledAmount = filledAmount[oldOrderKey];
+        // 将旧订单从红黑树（Price Tree）中移除，并将其在 filledAmount 中标记为已撤销。
         _removeOrder(oldOrder); // remove order from order storage
+
+        // 在 filledAmount 中标记为已撤销。
         _cancelOrder(oldOrderKey); // cancel order from order book
         emit LogCancel(oldOrderKey, oldOrder.maker);
 
         newOrderKey = _addOrder(newOrder); // add new order to order storage
 
         // make new order
+        // 如果是卖单 (List)
         if (oldOrder.side == LibOrder.Side.List) {
+            // 由于 NFT 已经锁在金库里，金库只需将该 NFT 的所有权从 oldOrderKey 映射到 newOrderKey 即可，不需要用户再次转入 NFT
             IEasySwapVault(_vault).editNFT(oldOrderKey, newOrderKey);
         } else if (oldOrder.side == LibOrder.Side.Bid) {
+            // 如果是买单 (Bid)：
             uint256 oldRemainingPrice = Price.unwrap(oldOrder.price) *
                 (oldOrder.nft.amount - oldFilledAmount);
             uint256 newRemainingPrice = Price.unwrap(newOrder.price) *
                 newOrder.nft.amount;
             if (newRemainingPrice > oldRemainingPrice) {
+                // 如果新价格更高，_editOrderTry 会计算差价（deltaBidPrice）
                 deltaBidPrice = newRemainingPrice - oldRemainingPrice;
                 IEasySwapVault(_vault).editETH{value: uint256(deltaBidPrice)}(
                     oldOrderKey,
@@ -448,6 +502,7 @@ contract EasySwapOrderBook is
                     oldOrder.maker
                 );
             } else {
+                // 如果新价格更低，金库会将多出的 ETH 退还，此时 bidPrice 为 0
                 IEasySwapVault(_vault).editETH(
                     oldOrderKey,
                     newOrderKey,

@@ -11,6 +11,10 @@ abstract contract ProtocolManager is
     Initializable,
     OwnableUpgradeable
 {
+    /*
+    平台收取的交易手续费比例
+    它基于基准点（Base Point）计算，通常 100 代表 1%（对应 LibPayInfo.TOTAL_SHARE 为 10000）
+    */
     uint128 public protocolShare;
 
     event LogUpdatedProtocolShare(uint128 indexed newProtocolShare);
