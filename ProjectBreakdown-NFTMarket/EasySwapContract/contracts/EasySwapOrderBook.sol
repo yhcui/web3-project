@@ -218,6 +218,19 @@ contract EasySwapOrderBook is
      * @param editDetails The edit details of oldOrderKey and new order info
      * @return newOrderKeys The unique id of the order is returned in order, if the id is empty, the corresponding order was not edit correctly.
      */
+    /*
+    该设计的精妙之处
+    资产利用率极高： 在修改买单价格时，系统会自动利用已经在金库中锁定的旧资金。例如：旧买单 10 ETH，你想改价到 12 ETH，你只需要在调用 editOrders 时随交易发送 2 ETH 即可。
+
+    NFT 零操作成本： 对于卖单修改价格，NFT 始终留在 Vault 中。相比于在其他平台需要先退回 NFT 再重新授权存入，EasySwap 这种“逻辑映射转移”的方式极大节省了 Gas。
+
+    安全性： 由于使用了 nonReentrant 和 _editOrderTry 的内部校验，确保了只有订单所有者才能修改订单，且旧订单在修改瞬间被作废，不存在“双重成交”的风险。
+
+    4. 潜在注意事项
+    盐值 (Salt)：在 newOrder 中，用户通常需要提供一个新的 salt。如果 salt 不变且其他参数（如价格）变了，OrderKey 会变；但如果 salt 和参数都完全一样，创建新订单时会因为 ID 重复而失败。
+
+    Gas 消耗：批量修改涉及多次红黑树的删除与插入，这是比较昂贵的存储操作。建议一次批量处理的数量不宜过多（通常 5-10 个为宜）。
+    */
     function editOrders(
         LibOrder.EditDetail[] calldata editDetails
     )
@@ -240,6 +253,8 @@ contract EasySwapOrderBook is
             newOrderKeys[i] = newOrderKey;
         }
 
+        // 多退：如果用户支付的 msg.value 超过了补差价所需的总额，余额原路退回。
+        // 少补：如果 msg.value 不足，底层调用 Vault.editETH 时会因余额检查失败而 revert。
         if (msg.value > bidETHAmount) {
             _msgSender().safeTransferETH(msg.value - bidETHAmount);
         }
@@ -269,14 +284,14 @@ contract EasySwapOrderBook is
     // 批量撮合
     /// @custom:oz-upgrades-unsafe-allow delegatecall
     function matchOrders(
-        LibOrder.MatchDetail[] calldata matchDetails
+        LibOrder.MatchDetail[] calldata matchDetails // 一个数组，每个元素包含一对 sellOrder（卖单）和 buyOrder（买单）
     )
         external
         payable
         override
         whenNotPaused
         nonReentrant
-        returns (bool[] memory successes)
+        returns (bool[] memory successes) //  返回布尔数组，告知调用者每一对撮合是否成功（这很重要，因为某一对失败不会导致整批回滚）。
     {
         successes = new bool[](matchDetails.length);
 
@@ -284,17 +299,27 @@ contract EasySwapOrderBook is
 
         for (uint256 i = 0; i < matchDetails.length; ++i) {
             LibOrder.MatchDetail calldata matchDetail = matchDetails[i];
+            /*
+            利用 delegatecall 实现“局部事务”.
+            为什么要用 delegatecall 调自己？ 
+            在 Solidity 中，如果一个子操作触发了 revert，整个交易通常会回滚。
+            为了实现“某一对匹配失败不影响其他匹配”，作者将核心撮合逻辑封装在 matchOrderWithoutPayback 中，并通过 delegatecall 调用。
+
+            如果 matchOrderWithoutPayback 内部因为价格不匹配或资产不足报错，delegatecall 会返回 false，但主函数 matchOrders 的循环会继续执行。
+            这在处理批量机器人交易或高频撮合时非常高效，节省了因为一个坏单导致整笔 Gas 浪费的风险。
+            */
             (bool success, bytes memory data) = address(this).delegatecall(
                 abi.encodeWithSignature(
                     "matchOrderWithoutPayback((uint8,uint8,address,(uint256,address,uint96),uint128,uint64,uint64),(uint8,uint8,address,(uint256,address,uint96),uint128,uint64,uint64),uint256)",
                     matchDetail.sellOrder,
                     matchDetail.buyOrder,
-                    msg.value - buyETHAmount
+                    msg.value - buyETHAmount // 余额动态传递
                 )
             );
 
             if (success) {
                 successes[i] = success;
+                // 当msgSender是买单时（即他构造了买单去吃掉别人的卖单）时，才会累加 buyPrice。
                 if (matchDetail.buyOrder.maker == _msgSender()) {
                     // buy order
                     uint128 buyPrice;
@@ -307,6 +332,7 @@ contract EasySwapOrderBook is
             }
         }
 
+        // 循环结束后，如果用户发送的 msg.value 超过了实际买单消耗的总额，多余的部分通过 safeTransferETH 退回。
         if (msg.value > buyETHAmount) {
             // return the remaining eth
             _msgSender().safeTransferETH(msg.value - buyETHAmount);
@@ -525,6 +551,10 @@ contract EasySwapOrderBook is
         );
     }
 
+    /*
+        买家和卖家都可以调用。
+        _matchOrder 的设计逻辑正是为了支持“双向成交”。在交易中，谁主动发起操作，谁就是 Taker，而已经在订单簿里挂单的人就是 Maker
+    */
     function _matchOrder(
         LibOrder.Order calldata sellOrder,
         LibOrder.Order calldata buyOrder,
@@ -534,10 +564,18 @@ contract EasySwapOrderBook is
         OrderKey buyOrderKey = LibOrder.hash(buyOrder);
         _isMatchAvailable(sellOrder, buyOrder, sellOrderKey, buyOrderKey);
 
+        /*
+        卖家调用（作为 Taker 卖出）
+        场景： 你手里有一个 NFT，你看到订单簿里有人挂了一个“买单（Bid）”，价格你很满意，于是你点“成交”。
+
+        钱已经在 Vault 金库里了（由买家挂单时预存）。
+        */
         if (_msgSender() == sellOrder.maker) {
             // sell order
             // accept bid
             require(msgValue == 0, "HD: value > 0"); // sell order cannot accept eth
+
+            // 校验买家单子是否真实存在于存储中 -- 该卖单是否存在于系统的链上订单簿中
             bool isSellExist = orders[sellOrderKey].order.maker != address(0); // check if sellOrder exist in order storage
             _validateOrder(sellOrder, isSellExist);
             _validateOrder(orders[buyOrderKey].order, false); // check if exist in order storage
@@ -564,10 +602,14 @@ contract EasySwapOrderBook is
                 address(this)
             );
 
+            // 手续费用
             uint128 protocolFee = _shareToAmount(fillPrice, protocolShare);
+            // 我是卖的，需要将钱给我。即我是sellOrder.maker
             sellOrder.maker.safeTransferETH(fillPrice - protocolFee);
 
             if (isSellExist) {
+                // 如果 isSellExist 为真：NFT 已经在 Vault（金库）里锁着了。成交时，合约直接从金库里把属于该 sellOrderKey 的 NFT 给买家。
+                // 将NFT转给买家。
                 IEasySwapVault(_vault).withdrawNFT(
                     sellOrderKey,
                     buyOrder.maker,
@@ -575,6 +617,8 @@ contract EasySwapOrderBook is
                     sellOrder.nft.tokenId
                 );
             } else {
+                // 如果 isSellExist 为假：NFT 还在卖家的钱包里。
+                // 成交时，合约需要调用 transferERC721 强制从卖家钱包划转到买家（前提是卖家已授权）。
                 IEasySwapVault(_vault).transferERC721(
                     sellOrder.maker,
                     buyOrder.maker,
@@ -582,6 +626,11 @@ contract EasySwapOrderBook is
                 );
             }
         } else if (_msgSender() == buyOrder.maker) {
+            // 买家调用（作为 Taker 买入）
+            // 场景： 你看中了一个 NFT，卖家已经挂好了“卖单（List）”，你觉得价格合适，直接付钱买下。
+            
+            
+            
             // buy order
             // accept list
             bool isBuyExist = orders[buyOrderKey].order.maker != address(0);
@@ -591,8 +640,12 @@ contract EasySwapOrderBook is
             uint128 buyPrice = Price.unwrap(buyOrder.price);
             uint128 fillPrice = Price.unwrap(sellOrder.price);
             if (!isBuyExist) {
+                // 如果你没挂过单：你调用时随交易发送 msg.value（即 msgValue）。
+                // 如果不在，则需要 Taker 在当前交易中支付 msg.value
                 require(msgValue >= fillPrice, "HD: value < fill price");
             } else {
+                // 如果买单在链上，意味着钱已经在金库里了
+                // 如果你之前挂过买单：系统会从金库里把你预存的钱取出来。
                 require(buyPrice >= fillPrice, "HD: buy price < fill price");
                 IEasySwapVault(_vault).withdrawETH(
                     buyOrderKey,

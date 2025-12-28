@@ -10,14 +10,20 @@ import {IEasySwapVault} from "./interface/IEasySwapVault.sol";
 /*
 (资产托管层)：专门负责托管用户存入的 ETH 和 NFT 资产。
 它充当“保险库”，仅允许授权的 OrderBook 合约进行资产划转，确保了资产安全性
+
+在 EasySwap 这种“链上订单簿”设计中，它扮演着非常关键的角色。
+与 OpenSea 那种资产留在用户钱包的模式不同，EasySwap 要求 Maker 将资产预先存入这个金库。
 */
 contract EasySwapVault is IEasySwapVault, OwnableUpgradeable {
     using LibTransferSafeUpgradeable for address;
     using LibTransferSafeUpgradeable for IERC721;
 
+    // 唯一管理者 只有这个地址有权调用它的核心资产转移方法（onlyEasySwapOrderBook 权限控制）
     address public orderBook;
-    mapping(OrderKey => uint256) public ETHBalance;
-    mapping(OrderKey => uint256) public NFTBalance;
+
+    // 它不按用户地址记录余额，而是按 OrderKey（订单 ID） 记录。这意味着资产是和订单绑定的。
+    mapping(OrderKey => uint256) public ETHBalance; // 记录买单（Bid）锁定的 ETH
+    mapping(OrderKey => uint256) public NFTBalance; // 记录卖单（List）锁定的 NFT TokenId
 
     modifier onlyEasySwapOrderBook() {
         require(msg.sender == orderBook, "HV: only EasySwap OrderBook");
@@ -39,7 +45,7 @@ contract EasySwapVault is IEasySwapVault, OwnableUpgradeable {
         ETHAmount = ETHBalance[orderKey];
         tokenId = NFTBalance[orderKey];
     }
-
+    // 当用户创建买单时，OrderBook 调用此方法。它会检查 msg.value 是否足额，并将金额记在对应的 orderKey 下
     function depositETH(
         OrderKey orderKey,
         uint256 ETHAmount
@@ -47,7 +53,7 @@ contract EasySwapVault is IEasySwapVault, OwnableUpgradeable {
         require(msg.value >= ETHAmount, "HV: not match ETHAmount");
         ETHBalance[orderKey] += msg.value;
     }
-
+    // 用于用户取消订单时，将资产原路退回给 Maker。
     function withdrawETH(
         OrderKey orderKey,
         uint256 ETHAmount,
@@ -57,6 +63,7 @@ contract EasySwapVault is IEasySwapVault, OwnableUpgradeable {
         to.safeTransferETH(ETHAmount);
     }
 
+    // 当用户创建卖单时，此方法通过 safeTransferNFT 将 NFT 从用户钱包转入金库。
     function depositNFT(
         OrderKey orderKey,
         address from,
@@ -67,7 +74,7 @@ contract EasySwapVault is IEasySwapVault, OwnableUpgradeable {
 
         NFTBalance[orderKey] = tokenId;
     }
-
+    // 用于用户取消订单时，将资产原路退回给 Maker。
     function withdrawNFT(
         OrderKey orderKey,
         address to,
@@ -80,6 +87,9 @@ contract EasySwapVault is IEasySwapVault, OwnableUpgradeable {
         IERC721(collection).safeTransferNFT(address(this), to, tokenId);
     }
 
+    /*
+    订单编辑 (Edit) —— 系统最精妙的地方
+    */   
     function editETH(
         OrderKey oldOrderKey,
         OrderKey newOrderKey,
@@ -89,9 +99,11 @@ contract EasySwapVault is IEasySwapVault, OwnableUpgradeable {
     ) external payable onlyEasySwapOrderBook {
         ETHBalance[oldOrderKey] = 0;
         if (oldETHAmount > newETHAmount) {
+            // 如果新价格比旧价格低：金库把多出来的 ETH 退给用户
             ETHBalance[newOrderKey] = newETHAmount;
             to.safeTransferETH(oldETHAmount - newETHAmount);
         } else if (oldETHAmount < newETHAmount) {
+            // 如果新价格比旧价格高：要求 OrderBook 补足差价
             require(
                 msg.value >= newETHAmount - oldETHAmount,
                 "HV: not match newETHAmount"
@@ -106,10 +118,12 @@ contract EasySwapVault is IEasySwapVault, OwnableUpgradeable {
         OrderKey oldOrderKey,
         OrderKey newOrderKey
     ) external onlyEasySwapOrderBook {
+        // 直接在映射里把 NFTBalance[oldOrderKey] 的值赋给 newOrderKey，然后删除旧记录。整个过程没有链上 NFT 转移，极度节省 Gas
         NFTBalance[newOrderKey] = NFTBalance[oldOrderKey];
         delete NFTBalance[oldOrderKey];
     }
 
+    // 用于订单成交时。当 Taker 出现，OrderBook 指令金库将锁定的 NFT 直接发给 Taker（或者从 Taker 手里把 NFT 发给 Maker）
     function transferERC721(
         address from,
         address to,
@@ -131,6 +145,7 @@ contract EasySwapVault is IEasySwapVault, OwnableUpgradeable {
         }
     }
 
+    // 合约实现了 onERC721Received，确保它能正确接收通过 safeTransferFrom 发送过来的 NFT，防止 NFT 被锁死在不支持接收的合约里
     function onERC721Received(
         address,
         address,
