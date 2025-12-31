@@ -12,11 +12,12 @@ import (
 
 var cfgFile string
 
+// 使用 Cobra 库（Go 语言中最流行的 CLI 框架）来定义一个命令行工具的根命令（root command）。
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "sync",
-	Short: "root server.",
-	Long:  `root server.`,
+	Use:   "sync",         // 指定命令的使用名称，也就是在终端中敲的命令名。
+	Short: "root server.", // 命令的简短描述。
+	Long:  `root server.`, //命令的详细描述（多行描述）
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -35,8 +36,18 @@ func Execute() {
 
 func init() {
 	// 设置initConfig在调用rootCmd的Execute()方法时运行
+	//告诉 Cobra，在调用 rootCmd.Execute()（即正式开始解析命令行参数和执行命令）之前，先执行 initConfig 这个函数。
 	cobra.OnInitialize(initConfig)
 	flags := rootCmd.PersistentFlags()
+	/*
+			&cfgFile 将标志的值绑定到全局变量 cfgFile（通常是一个 string 类型变量）
+			"config"长选项名：--config
+		   "c"短选项名：-c
+			"./config/config_import.toml"默认值：如果用户不指定，则使用这个路径
+			"config file (default is $HOME/.config_import.toml)"帮助信息：在 --help 中显示的描述
+
+
+	*/
 	flags.StringVarP(&cfgFile, "config", "c", "./config/config_import.toml", "config file (default is $HOME/.config_import.toml)")
 }
 
