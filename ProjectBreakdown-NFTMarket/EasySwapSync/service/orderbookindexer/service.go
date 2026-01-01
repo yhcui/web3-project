@@ -1,6 +1,5 @@
 package orderbookindexer
 
-//服务包，用于监听和处理区块链上的订单簿事件
 import (
 	"context"
 	"encoding/hex"
@@ -59,6 +58,7 @@ const (
 	ZeroAddress = "0x0000000000000000000000000000000000000000"
 )
 
+// 服务包，用于监听和处理区块链上的订单簿事件
 // 表区块链订单结构
 type Order struct {
 	Side     uint8          //订单方向（买单/卖单）

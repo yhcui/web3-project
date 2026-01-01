@@ -13,14 +13,15 @@ import (
 	"github.com/ProjectsTask/EasySwapSync/service/comm"
 )
 
+// NFT 集合过滤器：用于存储和管理 NFT 集合地址的线程安全集合
 // Filter is a thread-safe structure to store a set of strings.
 type Filter struct {
 	ctx     context.Context
 	db      *gorm.DB
-	chain   string
-	set     map[string]bool // Set of strings
+	chain   string          // 区块链名称
+	set     map[string]bool // 存储集合地址的 map Set of strings
 	lock    *sync.RWMutex   // Read/Write mutex for thread safety
-	project string
+	project string          // 项目名称
 }
 
 // NewFilter creates a new Filter and returns its pointer.
@@ -37,6 +38,7 @@ func New(ctx context.Context, db *gorm.DB, chain string, project string) *Filter
 
 // Add inserts a new element into the Filter.
 // The element is transformed to lowercase before being inserted.
+// 添加元素（转换为小写）
 func (f *Filter) Add(element string) {
 	f.lock.Lock()         // Acquire the lock for writing
 	defer f.lock.Unlock() // Defer unlocking until function return
@@ -44,6 +46,7 @@ func (f *Filter) Add(element string) {
 }
 
 // Remove deletes an element from the Filter.
+// 删除元素
 func (f *Filter) Remove(element string) {
 	f.lock.Lock()
 	defer f.lock.Unlock()
@@ -52,6 +55,7 @@ func (f *Filter) Remove(element string) {
 
 // Contains checks whether the Filter contains a specific element.
 // The element is transformed to lowercase before checking.
+// 检查元素是否存在
 func (f *Filter) Contains(element string) bool {
 	f.lock.RLock()         // Acquire the lock for reading
 	defer f.lock.RUnlock() // Defer unlocking until function return
@@ -59,11 +63,13 @@ func (f *Filter) Contains(element string) bool {
 	return exists
 }
 
+// 从数据库加载已导入地板价的集合地址到过滤器中
 func (f *Filter) PreloadCollections() error {
 	var addresses []string
 	var err error
 
 	// Query the addresses directly from the database
+	//从 ob_collection_{chain} 表查询 floor_price_status = 1 的集合
 	err = f.db.WithContext(f.ctx).
 		Table(gdb.GetMultiProjectCollectionTableName(f.project, f.chain)).
 		Select("address").
