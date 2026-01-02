@@ -36,9 +36,12 @@ func UserLoginHandler(svcCtx *svc.ServerCtx) gin.HandlerFunc {
 	}
 }
 
+// 此函数用于Web3登录流程中的消息生成环节，为用户生成一个唯一的、有时效性的登录消息，用于后续的签名验证过程。
 func GetLoginMessageHandler(svcCtx *svc.ServerCtx) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		//从URL路径参数中获取"address"参数值
 		address := c.Params.ByName("address")
+		//检查address是否为空
 		if address == "" {
 			xhttp.Error(c, errcode.NewCustomErr("user addr is null"))
 			return

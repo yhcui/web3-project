@@ -666,10 +666,12 @@ func (d *Dao) QueryCollectionTopNBid(ctx context.Context, chain string,
 
 var collectionDetailFields = []string{"id", "chain_id", "token_standard", "name", "address", "image_uri", "floor_price", "sale_price", "item_amount", "owner_amount"}
 
+// ListingOrder 卖方主动挂单等待买家
 const OrderType = 1
 const OrderStatus = 0
 
 // QueryListedAmount 查询集合中已上架NFT的数量
+// 根据订单状态、订单类型查询集合中已上架的NFT数量
 func (d *Dao) QueryListedAmount(ctx context.Context, chain string, collectionAddr string) (int64, error) {
 	// SQL解释:
 	// 1. 从Item表(ci)和订单表(co)联表查询

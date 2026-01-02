@@ -140,6 +140,7 @@ func genLoginTemplate(nonce string) string {
 
 func GetUserLoginMsg(ctx context.Context, svcCtx *svc.ServerCtx, address string) (*types.UserLoginMsgResp, error) {
 	uuid := uuid.NewString()
+	//生成登录消息模板，格式为 "Welcome to EasySwap!\nNonce:[uuid]"
 	loginMsg := genLoginTemplate(uuid)
 	if err := svcCtx.KvStore.Setex(getUserLoginMsgCacheKey(address), uuid, 72*60*60); err != nil {
 		return nil, errors.Wrap(err, "failed on generate login msg")

@@ -7,19 +7,41 @@ import (
 )
 
 const (
-	ListingOrder       = 1
-	OfferOrder         = 2
-	CollectionBidOrder = 3
-	ItemBidOrder       = 4
+	/*
+		在NFT市场中，Listing和Offer形成了交易的两个基本方向：
+		Listing: 卖方主动挂单等待买家
+		Offer: 买方主动出价寻求卖家
+		这种设计支持了NFT市场中常见的两种交易模式：直接购买（通过Listing）和议价交易（通过Offer）
+
+		CollectionBidOrder (集合竞价订单)
+		范围: 针对整个NFT集合
+		意图: 对某个NFT集合中的任意NFT进行出价
+		应用场景: 用户愿意购买特定集合中的任何一件作品，不限定具体ID
+
+		ItemBidOrder (物品竞价订单)
+		范围: 针对特定的单个NFT
+		意图: 对具体某个NFT进行出价
+		应用场景: 用户只想购买特定的某个NFT（由collection_address和token_id确定）
+	*/
+	ListingOrder       = 1 // 挂单/出售订单，用户想要出售NFT
+	OfferOrder         = 2 // 报价/购买订单，用户想要购买NFT
+	CollectionBidOrder = 3 // 集合竞价订单
+	ItemBidOrder       = 4 // 物品竞价订单
 )
 
 const (
-	OrderStatusActive    = 0
-	OrderStatusInactive  = 1
-	OrderStatusExpired   = 2
+	//活跃状态 - 订单处于有效期内，可以被匹配交易
+	OrderStatusActive = 0
+	//非活跃状态 - 订单暂时不可用，可能因为某些条件未满足
+	OrderStatusInactive = 1
+	//已过期状态 - 订单超过了设置的 ExpireTime，自动失效
+	OrderStatusExpired = 2
+	//已取消状态 - 订单被用户主动取消
 	OrderStatusCancelled = 3
-	OrderStatusFilled    = 4
-	OrderStatusNeedSign  = 5
+	//已完成状态 - 订单已完全成交，交易完成
+	OrderStatusFilled = 4
+	//待签名状态 - 订单需要进一步的签名确认才能激活
+	OrderStatusNeedSign = 5
 )
 
 const (

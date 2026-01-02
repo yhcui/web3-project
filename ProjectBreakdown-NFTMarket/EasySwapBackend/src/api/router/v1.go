@@ -11,6 +11,34 @@ import (
 func loadV1(r *gin.Engine, svcCtx *svc.ServerCtx) {
 	apiV1 := r.Group("/api/v1")
 
+	/*
+		钱包连接 + 签名验证。这叫Sign-In with Ethereum (SIWE)，基于EIP-4361标准
+		一、连接钱包（Connect Wallet）
+		1、用户点击“Connect Wallet”按钮。
+		2、前端使用库（如ethers.js、web3.js 或 viem）调用钱包的API（通过浏览器注入的window.ethereum）。
+		3、钱包弹出确认窗口，用户批准连接。
+		4、应用获取用户的公钥地址（如0x123...abc），但不获取私钥（私钥永远留在用户设备）。
+		二、签名消息（Sign Message 或 SIWE）
+		1、服务器生成一个Nonce（随机数，防止重放攻击）和标准化消息（包含域名、时间、链ID等）。 /:address/login-message
+		2、用户用钱包签名这个消息（钱包弹出“Sign”提示，用户确认）。
+		3、签名不消耗Gas费（只是本地计算）。
+		4、前端把签名发给后端，后端用公钥验证签名是否匹配消息。/login 接口
+		5、验证通过 → 登录成功，后端颁发JWT/Session Token，让用户在应用中操作。
+
+		后端也拿不到私钥，后端如何验证？
+		后端确实永远拿不到私钥，但它仍然能100%可靠地验证签名是否由这个地址的持有者发出。这完全依赖**椭圆曲线数字签名算法（ECDSA）**的数学原理——这是以太坊、比特币等区块链的核心加密机制。
+		核心原理：公钥加密的“签名-验证”机制
+
+		私钥 → 可以生成签名（只有私钥持有者能做）
+		公钥（即钱包地址的来源） → 可以验证签名（任何人都能做，不需要私钥）
+
+		后端做的事：
+		从地址恢复出公钥（以太坊地址本身就是公钥的Keccak-256哈希的最后20字节）
+		用ECDSA算法验证：给定“原始消息 + 签名”，是否能匹配这个公钥
+		如果匹配 → 证明这个签名一定是这个地址的私钥持有者发出的（数学上不可能伪造）
+		额外检查Nonce是否正确、未过期、未重复使用，以及域名、链ID等是否匹配
+
+	*/
 	user := apiV1.Group("/user")
 	{
 		user.GET("/:address/login-message", v1.GetLoginMessageHandler(svcCtx)) // 生成login签名信息

@@ -148,6 +148,42 @@ func (d *Dao) QueryMultiChainCollectionsInfo(ctx context.Context, collectionAddr
 	return collections, nil
 }
 
+/*
+
+生成的SQL
+SELECT * FROM (
+    (select
+        gc.address as address,
+        gc.name as name,
+        gc.floor_price as floor_price,
+        gc.chain_id as chain_id,
+        gc.item_amount as item_amount,
+        gc.symbol as symbol,
+        gc.image_uri as image_uri,
+        count(*) as item_count
+    from ob_collection_[chainName1] as gc
+    join ob_item_[chainName1] as gi on gc.address = gi.collection_address
+    where gi.owner in ('[userAddr1]','[userAddr2]',...)
+    group by gc.address)
+    UNION ALL
+    (select
+        gc.address as address,
+        gc.name as name,
+        gc.floor_price as floor_price,
+        gc.chain_id as chain_id,
+        gc.item_amount as item_amount,
+        gc.symbol as symbol,
+        gc.image_uri as image_uri,
+        count(*) as item_count
+    from ob_collection_[chainName2] as gc
+    join ob_item_[chainName2] as gi on gc.address = gi.collection_address
+    where gi.owner in ('[userAddr1]','[userAddr2]',...)
+    group by gc.address)
+    -- ... 更多链的子查询
+) as combined
+ORDER BY combined.floor_price * CAST(combined.item_count AS DECIMAL) DESC
+
+*/
 // QueryMultiChainUserCollectionInfos 查询用户在多条链上的Collection信息
 func (d *Dao) QueryMultiChainUserCollectionInfos(ctx context.Context, chainID []int,
 	chainNames []string, userAddrs []string) ([]types.UserCollections, error) {

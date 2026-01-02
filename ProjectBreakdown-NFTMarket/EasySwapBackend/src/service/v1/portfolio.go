@@ -60,6 +60,7 @@ func GetMultiChainUserCollections(ctx context.Context, svcCtx *svc.ServerCtx, ch
 		go func(chainName string, collectionAddrs []string) {
 			defer wg.Done()
 
+			//查询多个集合中已上架NFT的数量
 			list, err := svcCtx.Dao.QueryListedAmountEachCollection(ctx, chainName, collectionAddrs, userAddrs)
 			if err != nil {
 				return

@@ -11,8 +11,8 @@ type UserCollectionsParams struct {
 type UserCollections struct {
 	ChainID    int             `json:"chain_id"`
 	Address    string          `json:"address"` // 合约地址
-	Name       string          `json:"name"`
-	Symbol     string          `json:"symbol"`
+	Name       string          `json:"name"`    // 集合名
+	Symbol     string          `json:"symbol"`  //
 	ImageURI   string          `json:"image_uri"`
 	ItemCount  int64           `json:"item_count"`
 	FloorPrice decimal.Decimal `json:"floor_price"`
