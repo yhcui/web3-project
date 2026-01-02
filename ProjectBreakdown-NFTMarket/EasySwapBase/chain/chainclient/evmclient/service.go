@@ -31,6 +31,7 @@ func (s *Service) Client() interface{} {
 	return s.client
 }
 
+// 根据过滤条件查询日志，将字符串地址和主题转换为所需类
 func (s *Service) FilterLogs(ctx context.Context, q logTypes.FilterQuery) ([]interface{}, error) {
 	var addresses []common.Address
 	for _, addr := range q.Addresses {
@@ -66,6 +67,7 @@ func (s *Service) FilterLogs(ctx context.Context, q logTypes.FilterQuery) ([]int
 	return logEvents, nil
 }
 
+// 获取指定块号的区块时间戳
 func (s *Service) BlockTimeByNumber(ctx context.Context, blockNum *big.Int) (uint64, error) {
 	header, err := s.client.HeaderByNumber(ctx, blockNum)
 	if err != nil {
@@ -75,14 +77,17 @@ func (s *Service) BlockTimeByNumber(ctx context.Context, blockNum *big.Int) (uin
 	return header.Time, nil
 }
 
+// 使用 logTypes.CallParam 中的参数执行合约调用
 func (s *Service) CallContractByChain(ctx context.Context, param logTypes.CallParam) (interface{}, error) {
 	return s.CallContract(ctx, param.EVMParam, param.BlockNumber)
 }
 
+// 使用 logTypes.CallParam 中的参数执行合约调用
 func (s *Service) CallContract(ctx context.Context, msg ethereum.CallMsg, blockNumber *big.Int) ([]byte, error) {
 	return s.client.CallContract(ctx, msg, blockNumber)
 }
 
+// 获取当前链的最新块号
 func (s *Service) BlockNumber() (uint64, error) {
 	var err error
 	blockNum, err := s.client.BlockNumber(context.Background())
@@ -93,6 +98,7 @@ func (s *Service) BlockNumber() (uint64, error) {
 	return blockNum, nil
 }
 
+// 根据块号获取包含所有交易的区块信息
 func (s *Service) BlockWithTxs(ctx context.Context, blockNumber uint64) (interface{}, error) {
 	blockWithTxs, err := s.client.BlockByNumber(ctx, big.NewInt(int64(blockNumber)))
 	if err != nil {

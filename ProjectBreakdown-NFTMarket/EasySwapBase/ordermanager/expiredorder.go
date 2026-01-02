@@ -197,6 +197,17 @@ func (om *OrderManager) addToOrderExpiryCheckQueue(delaySeconds int64, chainSuff
 	} else {
 		// 否则插入到链表头部
 		// 因为不需要排序,所以直接插入到头部即可
+		//这段代码是头插法，将新节点插入到链表头部，而不是追加到尾部。
+		/*
+				为什么使用头插法
+				性能考虑：头插法时间复杂度为 O(1)，而追加到尾部需要遍历整个链表找到尾节点，时间复杂度为 O(n)
+				时间轮特性：在时间轮算法中，同一时间槽内的订单执行顺序通常不重要，因为它们都在同一时间点被处理
+				实现简化：头插法实现简单，不需要维护尾指针或遍历链表
+			时间轮的工作原理
+				时间轮的每个槽位存储的是在特定时间到期的任务
+				同一槽位内的任务在时间轮转动到该槽位时会被一起处理
+				因此，链表中元素的顺序对最终结果没有影响
+		*/
 		head := om.TimeWheel[index].NotifyActivities
 		orderActivity.Next = head
 		om.TimeWheel[index].NotifyActivities = orderActivity
