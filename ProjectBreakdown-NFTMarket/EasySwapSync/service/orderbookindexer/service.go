@@ -31,8 +31,9 @@ import (
 )
 
 const (
-	EventIndexType  = 6  //事件索引类型常量
-	SleepInterval   = 10 // in seconds 休眠间隔（秒）
+	EventIndexType = 6  //事件索引类型常量
+	SleepInterval  = 10 // in seconds 休眠间隔（秒）
+	//定义每次同步的区块范围大小
 	SyncBlockPeriod = 10 // 同步区块周期
 	//挂单事件主题
 	LogMakeTopic = "0xfc37f2ff950f95913eb7182357ba3c14df60ef354bc7d6ab1ba2815f249fffe6"
@@ -141,6 +142,7 @@ func (s *Service) SyncOrderBookEventLoop() {
 		default:
 		}
 
+		// 获取当前链条的最新区块ID
 		currentBlockNum, err := s.chainClient.BlockNumber() // 以轮询的方式获取当前区块高度
 		if err != nil {
 			xzap.WithContext(s.ctx).Error("failed on get current block number", zap.Error(err))
@@ -148,14 +150,19 @@ func (s *Service) SyncOrderBookEventLoop() {
 			continue
 		}
 
+		// 不同步最新的，最新的区块可能因为各种原因出现问题
+		// MultiChainMaxBlockDifference[s.chain] 定义各链允许同步的最新区块差异限制
 		if lastSyncBlock > currentBlockNum-MultiChainMaxBlockDifference[s.chain] { // 如果上次同步的区块高度大于当前区块高度，等待一段时间后再次轮询
+			// 已经同步过了，不进行后面操作
 			time.Sleep(SleepInterval * time.Second)
 			continue
 		}
 
 		startBlock := lastSyncBlock
+		//SyncBlockPeriod 定义每次同步的区块范围大小
 		endBlock := startBlock + SyncBlockPeriod
-		if endBlock > currentBlockNum-MultiChainMaxBlockDifference[s.chain] { // 如果结束区块高度大于当前区块高度，将结束区块高度设置为当前区块高度
+		if endBlock > currentBlockNum-MultiChainMaxBlockDifference[s.chain] {
+			// 如果结束区块高度大于当前区块高度，将结束区块高度设置为当前区块高度
 			endBlock = currentBlockNum - MultiChainMaxBlockDifference[s.chain]
 		}
 
@@ -175,10 +182,13 @@ func (s *Service) SyncOrderBookEventLoop() {
 		for _, log := range logs { // 遍历日志，根据不同的topic处理不同的事件
 			ethLog := log.(ethereumTypes.Log)
 			switch ethLog.Topics[0].String() {
+			// 挂单事件主题
 			case LogMakeTopic:
 				s.handleMakeEvent(ethLog)
-			case LogCancelTopic:
+				//取消订单事件主题
+			case LogCancelTopic: // 取消订单事件主题
 				s.handleCancelEvent(ethLog)
+				//匹配成交事件主题
 			case LogMatchTopic:
 				s.handleMatchEvent(ethLog)
 			default:
