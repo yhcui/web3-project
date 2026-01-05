@@ -81,6 +81,7 @@ describe("EasySwap Test", function () {
             }
             const orders = [order];
 
+            // callStatic:以只读的方式模拟合约写方法
             orderKeys = await esDex.callStatic.makeOrders(orders)
             expect(orderKeys[0]).to.not.equal(Byte32Zero)
 

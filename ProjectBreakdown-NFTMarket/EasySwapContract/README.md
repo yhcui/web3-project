@@ -206,6 +206,9 @@ and install hardhat by following [hardhat official guide](https://hardhat.org/ha
 
 ```shell
 npm install
+实际测试需要运行命令 npm install --legacy-peer-deps --no-optional
+node 版本为v20.19.6 (64-bit)
+npm install --save-dev "@nomiclabs/hardhat-ethers@^2.0.0"
 ```
 
 ### 2. copy .env.example to .env
