@@ -81,6 +81,7 @@ contract OrderStorage is Initializable {
         }
 
         // insert order to order queue
+        // 集合合约 - 订单方向 - 价格 - 订单key
         LibOrder.OrderQueue storage orderQueue = orderQueues[
             order.nft.collection
         ][order.side][order.price];

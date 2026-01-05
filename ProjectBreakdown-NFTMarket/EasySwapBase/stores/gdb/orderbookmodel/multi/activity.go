@@ -6,28 +6,48 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// NFT市场活动类型常量解释
 // (1:Buy,2:Mint,3:List,4:Cancel Listing,5:Cancler Offer,6.Make Offer,7.Sell,8.Transfer.)
 const (
-	Buy                 = 1
-	Mint                = 2
-	Listing             = 3
-	CancelListing       = 4
-	CancelOffer         = 5
-	MakeOffer           = 6
-	Sale                = 7
-	Transfer            = 8
-	CollectionBid       = 9
-	ItemBid             = 10
+	//购买活动，表示用户购买NFT
+	Buy = 1
+	//铸造活动，表示新NFT被创建/铸造
+	Mint = 2
+	//列表或上架活动，表示NFT被挂单出售
+	Listing = 3
+	//取消列表，表示取消NFT出售挂单
+	CancelListing = 4
+	//取消报价，表示取消对某个NFT的出价
+	CancelOffer = 5
+	//报价/出价活动，表示用户对某个NFT进行出价
+	MakeOffer = 6
+	//销售活动，表示NFT实际成交销售
+	Sale = 7
+	//NFT在钱包间的转移
+	Transfer = 8
+	//合出价，表示对整个NFT集合的批量出价
+	CollectionBid = 9
+	//项目出价，表示对特定单个NFT项目的出价
+	ItemBid = 10
+	//取消集合出价，表示撤销对NFT集合的出价
 	CancelCollectionBid = 16
-	CancelItemBid       = 17
+	//取消项目出价，表示撤销对特定NFT的出价
+	CancelItemBid = 17
 )
 
+// 不同NFT市场平台的常量组
 const (
+	//集线器/中心平台，可能是自建或聚合平台
 	Hub int = iota
+	//OpenSea，最大的NFT市场平台
 	Opensea
+	//LooksRare，知名NFT交易市场
 	Looksrare
+	//X2Y2，NFT交易市场平台
 	X2Y2
+	//Blur，专注于蓝筹NFT的交易市场
 	Blur
+	//单簿去中心化交易所
 	OrderBookDex
 )
 

@@ -1,22 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
-
+// 可升级
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
+// 使用三方大佬 写的库 -- 使用他的原因是用了底层的原语来实现，节省GAS
 import {LibTransferSafeUpgradeable, IERC721} from "./libraries/LibTransferSafeUpgradeable.sol";
+
+// 使用红黑树进行订单的存储
 import {Price} from "./libraries/RedBlackTreeLibrary.sol";
+// 订单结构体
 import {LibOrder, OrderKey} from "./libraries/LibOrder.sol";
 import {LibPayInfo} from "./libraries/LibPayInfo.sol";
 
+// 写智能合约最好优先定义接口
 import {IEasySwapOrderBook} from "./interface/IEasySwapOrderBook.sol";
-import {IEasySwapVault} from "./interface/IEasySwapVault.sol";
 
+// 存储订单资产的模块。Vault: 保险库，金库
+import {IEasySwapVault} from "./interface/IEasySwapVault.sol";
+// 用于存储订单信息的模块
 import {OrderStorage} from "./OrderStorage.sol";
+
+// 用于处理订单逻辑验证的模块
 import {OrderValidator} from "./OrderValidator.sol";
+
+// 用于管理协议费的模块 -- 收取费用，挣钱
 import {ProtocolManager} from "./ProtocolManager.sol";
 /*
 这是用户的主要入口。
@@ -35,6 +46,7 @@ contract EasySwapOrderBook is
     ProtocolManager,
     OrderValidator
 {
+    // 注意顺序
     using LibTransferSafeUpgradeable for address;
     using LibTransferSafeUpgradeable for IERC721;
 
@@ -59,6 +71,7 @@ contract EasySwapOrderBook is
         uint128 fillPrice
     );
 
+    // 审计时要求，和资产转移相关的必须要声明事件 -- 可能是方便审计机构
     event LogWithdrawETH(address recipient, uint256 amount);
     event BatchMatchInnerError(uint256 offset, bytes msg);
     event LogSkipOrder(OrderKey orderKey, uint64 salt);
@@ -69,11 +82,14 @@ contract EasySwapOrderBook is
     }
 
     /// @custom:oz-upgrades-unsafe-allow state-variable-immutable state-variable-assignment
+    // TODO 
     address private immutable self = address(this);
 
+    // IEasySwapVault
     address private _vault;
 
     /**
+     * 可升级合约 - 必须的
      * @notice Initialize contracts.
      * @param newProtocolShare Default protocol fee.
      * @param newVault easy swap vault address.
@@ -92,6 +108,12 @@ contract EasySwapOrderBook is
         );
     }
 
+    /**
+     * 可升级合约 - 必须的
+     * @notice Initialize contracts.
+     * @param newProtocolShare Default protocol fee.
+     * @param newVault easy swap vault address.
+     */
     function __EasySwapOrderBook_init(
         uint128 newProtocolShare,
         address newVault,
@@ -126,8 +148,10 @@ contract EasySwapOrderBook is
 
         __OrderStorage_init();
         __ProtocolManager_init(newProtocolShare);
+        // 没有实现也要写，这是标准、规范
         __OrderValidator_init(EIP712Name, EIP712Version);
 
+        // 只有这个是当前合约的初始化函数
         setVault(newVault);
     }
 
@@ -219,6 +243,8 @@ contract EasySwapOrderBook is
      * @return newOrderKeys The unique id of the order is returned in order, if the id is empty, the corresponding order was not edit correctly.
      */
     /*
+    只有价格可以编辑
+
     该设计的精妙之处
     资产利用率极高： 在修改买单价格时，系统会自动利用已经在金库中锁定的旧资金。例如：旧买单 10 ETH，你想改价到 12 ETH，你只需要在调用 editOrders 时随交易发送 2 ETH 即可。
 
@@ -245,6 +271,7 @@ contract EasySwapOrderBook is
 
         uint256 bidETHAmount;
         for (uint256 i = 0; i < editDetails.length; ++i) {
+            
             (OrderKey newOrderKey, uint256 bidPrice) = _editOrderTry(
                 editDetails[i].oldOrderKey,
                 editDetails[i].newOrder
@@ -281,7 +308,7 @@ contract EasySwapOrderBook is
      * @dev    nft and price values are the same as buyOrder, sellOrder.expiry > block.timestamp, sellOrder.salt != 0;
      * @param matchDetails Array of `MatchDetail` structs containing the details of sell and buy order to be matched.
      */
-    // 批量撮合
+    // 批量撮合 -- 撮合失败的订单不能影响其他订单
     /// @custom:oz-upgrades-unsafe-allow delegatecall
     function matchOrders(
         LibOrder.MatchDetail[] calldata matchDetails // 一个数组，每个元素包含一对 sellOrder（卖单）和 buyOrder（买单）
@@ -365,20 +392,30 @@ contract EasySwapOrderBook is
 
     3、filledAmount 的真正作用是什么？
         既然创建时不改它，为什么要检查它？它的作用在于**“全生命周期覆盖”**：
-
         防重开：如果一个订单曾经成交了（filledAmount > 0）或者被取消了（filledAmount = MAX），即便该订单后来因为某种原因从红黑树中剔除了，filledAmount 也会永久记录该 ID 已失效。
+        防篡改：它主要配合 matchOrder 
+        
+    Price.unwrap(order.price)
+    它仅在用户自定义值类型（User Defined Value Types） 中自动生成，从 Solidity 0.8.8 版本开始支持。
+    type MyInt is uint256;    
+    Solidity 会自动为这个类型生成两个内置函数：
 
-        防篡改：它主要配合 matchOrder 使用。
+        MyInt.wrap(uint256 value) returns (MyInt)：将底层类型转换为自定义类型。
+        MyInt.unwrap(MyInt value) returns (uint256)：将自定义类型转换回底层类型。
+
+        这些 wrap 和 unwrap 是类型特定的成员函数，由编译器自动提供，用于安全地进行类型转换，而非全局内置的独立函数。
+        在大多数情况下，你可以直接用 order.price != 0 来判断，而不需要写成 Price.unwrap(order.price) != 0
     */
     function _makeOrderTry(
         LibOrder.Order calldata order,
-        uint128 ETHAmount
+        uint128 ETHAmount // 这里传的是每一个订单的价格
     ) internal returns (OrderKey newOrderKey) {
         if (
             order.maker == _msgSender() && // only maker can make order
             Price.unwrap(order.price) != 0 && // price cannot be zero
             order.salt != 0 && // salt cannot be zero
             (order.expiry > block.timestamp || order.expiry == 0) && // expiry must be greater than current block timestamp or no expiry
+            // 订单的成交数量
             filledAmount[LibOrder.hash(order)] == 0 // order cannot be canceled or filled。防止重复挂单 (Replay Protection)
             
         ) {
@@ -437,8 +474,10 @@ contract EasySwapOrderBook is
             filledAmount[orderKey] < order.nft.amount // only unfilled order can be canceled
         ) {
             OrderKey orderHash = LibOrder.hash(order);
+            // 移除订单数据
             _removeOrder(order);
             // withdraw asset from vault
+            //资产退回
             if (order.side == LibOrder.Side.List) {
                 IEasySwapVault(_vault).withdrawNFT(
                     orderHash,
@@ -455,6 +494,7 @@ contract EasySwapOrderBook is
                     order.maker
                 );
             }
+            // 将filledAmount 置为取消
             _cancelOrder(orderKey);
             success = true;
             emit LogCancel(orderKey, order.maker);
@@ -467,6 +507,7 @@ contract EasySwapOrderBook is
         OrderKey oldOrderKey,
         LibOrder.Order calldata newOrder
     ) internal returns (OrderKey newOrderKey, uint256 deltaBidPrice) {
+        // 底层用红黑树也是先移除再添加，orderKey 会变
         LibOrder.Order memory oldOrder = orders[oldOrderKey].order;
 
         // check order, only the price and amount can be modified
@@ -509,6 +550,7 @@ contract EasySwapOrderBook is
         // make new order
         // 如果是卖单 (List)
         if (oldOrder.side == LibOrder.Side.List) {
+            // 底层用红黑树也是先移除再添加，orderKey 会变
             // 由于 NFT 已经锁在金库里，金库只需将该 NFT 的所有权从 oldOrderKey 映射到 newOrderKey 即可，不需要用户再次转入 NFT
             IEasySwapVault(_vault).editNFT(oldOrderKey, newOrderKey);
         } else if (oldOrder.side == LibOrder.Side.Bid) {
@@ -562,6 +604,7 @@ contract EasySwapOrderBook is
     ) internal returns (uint128 costValue) {
         OrderKey sellOrderKey = LibOrder.hash(sellOrder);
         OrderKey buyOrderKey = LibOrder.hash(buyOrder);
+        // 进行各种检验
         _isMatchAvailable(sellOrder, buyOrder, sellOrderKey, buyOrderKey);
 
         /*
@@ -575,17 +618,22 @@ contract EasySwapOrderBook is
             // accept bid
             require(msgValue == 0, "HD: value > 0"); // sell order cannot accept eth
 
-            // 校验买家单子是否真实存在于存储中 -- 该卖单是否存在于系统的链上订单簿中
+            // 校验卖家单子是否真实存在于存储中 -- 该卖单是否存在于系统的链上订单簿中
             bool isSellExist = orders[sellOrderKey].order.maker != address(0); // check if sellOrder exist in order storage
             _validateOrder(sellOrder, isSellExist);
             _validateOrder(orders[buyOrderKey].order, false); // check if exist in order storage
 
             uint128 fillPrice = Price.unwrap(buyOrder.price); // the price of bid order
+            // 存在链上
             if (isSellExist) {
+                
                 // check if sellOrder exist in order storage , del&fill if exist
+                // 订单匹配上后会移除订单
                 _removeOrder(sellOrder);
+                // 更新卖单filledAmount为NFT的成交数量
                 _updateFilledAmount(sellOrder.nft.amount, sellOrderKey); // sell order totally filled
             }
+            // 更新买单ffilledAmount
             _updateFilledAmount(filledAmount[buyOrderKey] + 1, buyOrderKey);
             emit LogMatch(
                 sellOrderKey,
@@ -596,6 +644,7 @@ contract EasySwapOrderBook is
             );
 
             // transfer nft&eth
+            // 从金库里把买家的钱取出来给当前订单薄
             IEasySwapVault(_vault).withdrawETH(
                 buyOrderKey,
                 fillPrice,
@@ -604,9 +653,9 @@ contract EasySwapOrderBook is
 
             // 手续费用
             uint128 protocolFee = _shareToAmount(fillPrice, protocolShare);
-            // 我是卖的，需要将钱给我。即我是sellOrder.maker
+            // 将去掉手续费用的钱，转给卖家
             sellOrder.maker.safeTransferETH(fillPrice - protocolFee);
-
+            // 卖单存在
             if (isSellExist) {
                 // 如果 isSellExist 为真：NFT 已经在 Vault（金库）里锁着了。成交时，合约直接从金库里把属于该 sellOrderKey 的 NFT 给买家。
                 // 将NFT转给买家。
@@ -628,9 +677,7 @@ contract EasySwapOrderBook is
         } else if (_msgSender() == buyOrder.maker) {
             // 买家调用（作为 Taker 买入）
             // 场景： 你看中了一个 NFT，卖家已经挂好了“卖单（List）”，你觉得价格合适，直接付钱买下。
-            
-            
-            
+            // 买单一个价格，卖单一个价格，最终要以卖单价格成交
             // buy order
             // accept list
             bool isBuyExist = orders[buyOrderKey].order.maker != address(0);
@@ -645,7 +692,7 @@ contract EasySwapOrderBook is
                 require(msgValue >= fillPrice, "HD: value < fill price");
             } else {
                 // 如果买单在链上，意味着钱已经在金库里了
-                // 如果你之前挂过买单：系统会从金库里把你预存的钱取出来。
+                // 如果你之前挂过买单：系统会从金库里把你预存的钱取出来。放在订单薄中
                 require(buyPrice >= fillPrice, "HD: buy price < fill price");
                 IEasySwapVault(_vault).withdrawETH(
                     buyOrderKey,

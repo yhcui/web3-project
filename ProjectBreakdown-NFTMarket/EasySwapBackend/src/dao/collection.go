@@ -259,6 +259,34 @@ func (d *Dao) QueryMultiChainUserCollectionInfos(ctx context.Context, chainID []
 // - []types.PortfolioItemInfo: NFT Item信息列表
 // - int64: 总数
 // - error: 错误信息
+/*
+ SELECT * FROM (
+    (select gi.chain_id as chain_id, gi.collection_address as collection_address,
+     gi.token_id as token_id, gi.name as name, gi.owner as owner,
+     sub.last_event_time as owned_time
+     from ob_item_sepolia gi
+     left join (select sgi.collection_address, sgi.token_id, max(sga.event_time) as last_event_time
+                from ob_item_sepolia sgi join ob_activity_sepolia sga
+                on sgi.collection_address = sga.collection_address and sgi.token_id = sga.token_id
+                where sgi.owner in ('addr1','addr2') and sga.activity_type = 7
+                group by sgi.collection_address, sgi.token_id) sub
+     on gi.collection_address = sub.collection_address and gi.token_id = sub.token_id
+     where gi.owner in ('addr1','addr2'))
+    UNION ALL
+    (select gi.chain_id as chain_id, gi.collection_address as collection_address,
+     gi.token_id as token_id, gi.name as name, gi.owner as owner,
+     sub.last_event_time as owned_time
+     from ob_item_sepolia gi
+     left join (select sgi.collection_address, sgi.token_id, max(sga.event_time) as last_event_time
+                from ob_item_sepolia sgi join ob_activity_sepolia  sga
+                on sgi.collection_address = sga.collection_address and sgi.token_id = sga.token_id
+                where sgi.owner in ('addr1','addr2') and sga.activity_type = 7
+                group by sgi.collection_address, sgi.token_id) sub
+     on gi.collection_address = sub.collection_address and gi.token_id = sub.token_id
+     where gi.owner in ('addr1','addr2'))
+) as combined ORDER BY combined.owned_time DESC LIMIT 10 OFFSET 0
+
+*/
 func (d *Dao) QueryMultiChainUserItemInfos(ctx context.Context, chain []string, userAddrs []string,
 	contractAddrs []string, page, pageSize int) ([]types.PortfolioItemInfo, int64, error) {
 	var count int64

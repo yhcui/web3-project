@@ -38,18 +38,18 @@ library LibOrder {
     }
 
     struct Order {
-        Side side;
-        SaleKind saleKind;
+        Side side; // 订单买卖方向 
+        SaleKind saleKind; // 交易类型
         address maker; // 挂单者 / 创建者
         Asset nft;
         Price price; // unit price of nft
         uint64 expiry;
-        uint64 salt;
+        uint64 salt; // 随机数，防止哈希碰撞,有了这个，order key 就可以唯一标识一个订单了
     }
 
     struct DBOrder {
         Order order;
-        OrderKey next;
+        OrderKey next; // byte32
     }
 
     /// @dev Order queue: used to store orders of the same price

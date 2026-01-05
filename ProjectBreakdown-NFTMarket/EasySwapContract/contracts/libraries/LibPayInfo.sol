@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+// 支付信息
 library LibPayInfo {
     //total share in percentage, 10,000 = 100%
     uint128 public constant TOTAL_SHARE = 10000;
@@ -9,10 +10,10 @@ library LibPayInfo {
         keccak256("PayInfo(address receiver,uint96 share)");
 
     struct PayInfo {
-        address payable receiver;
+        address payable receiver; //资产接收者
         // Share of funds. 
         // Basis point format.
-        uint96 share;
+        uint96 share; // 分配比例如 95%
     }
 
     function hash(PayInfo memory info) internal pure returns (bytes32) {

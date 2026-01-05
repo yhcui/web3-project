@@ -83,7 +83,7 @@ contract EasySwapVault is IEasySwapVault, OwnableUpgradeable {
     ) external onlyEasySwapOrderBook {
         require(NFTBalance[orderKey] == tokenId, "HV: not match tokenId");
         delete NFTBalance[orderKey];
-
+        // 将自己的直接转NFT就可以了不需要授权。
         IERC721(collection).safeTransferNFT(address(this), to, tokenId);
     }
 

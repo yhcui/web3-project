@@ -444,6 +444,7 @@ func GetMultiChainUserListings(ctx context.Context, svcCtx *svc.ServerCtx, chain
 		wg.Add(1)
 		go func(chainName string, collectionArray []string) {
 			defer wg.Done()
+			// 查询集合中的最高出价
 			bestBids, err := svcCtx.Dao.QueryCollectionsBestBid(ctx, chainName, userAddr, collectionArray)
 			if err != nil {
 				queryErr = errors.Wrap(err, "failed on query collections best bids")
@@ -470,6 +471,7 @@ func GetMultiChainUserListings(ctx context.Context, svcCtx *svc.ServerCtx, chain
 		wg.Add(1)
 		go func(chainName string, itemInfos []types.ItemInfo) {
 			defer wg.Done()
+			// 查询Item中的最高出价
 			bids, err := svcCtx.Dao.QueryItemsBestBids(ctx, chainName, userAddr, itemInfos)
 			if err != nil {
 				queryErr = errors.Wrap(err, "failed on query items best bids")
