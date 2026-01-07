@@ -97,6 +97,7 @@ func (om *OrderManager) floorPriceProcess() {
 
 		// 通知collection状态更新
 		if event.CollectionAddr != "" {
+			// 后续在listcount.go中用到了
 			om.collectionListedCh <- event.CollectionAddr
 		}
 
