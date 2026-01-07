@@ -62,7 +62,7 @@ func (om *OrderManager) floorPriceProcess() {
 		xzap.WithContext(om.Ctx).Error("failed on flush remaining trade events", zap.Error(err))
 	}
 
-	// 从数据库加载订单并更新地板价
+	// 从数据库加载订单并更新地板价 -- 看代码是所有的都加载了
 	if err := om.loadCollectionTradeInfo(); err != nil {
 		xzap.WithContext(om.Ctx).Error("[Order Manage] load orders to queue", zap.Error(err))
 		return
@@ -151,9 +151,12 @@ func (om *OrderManager) floorPriceProcess() {
 					continue
 				}
 			} else {
-				// 移除卖家的所有订单
+				// 移除卖家的所有订单 -- 非买家
 				tradeInfo.orders.RemoveMakerOrders(event.From, event.TokenID)
 				// 获取买家的有效订单
+				// 买家获得NFT后，可能已经创建了卖单（listing订单）
+				// 代码获取的是新所有者的卖单，不是买单
+				// 这些卖单会参与地板价计算，是合理的业务场景
 				orders, err := om.getUserValidOrders(event.CollectionAddr, event.TokenID, event.To)
 				if err != nil {
 					xzap.WithContext(om.Ctx).Error("failed on get users valid orders",
@@ -166,6 +169,7 @@ func (om *OrderManager) floorPriceProcess() {
 
 				// 添加买家的有效订单到队列
 				for _, order := range orders {
+					//避免将被禁止NFT的订单纳入地板价计算
 					if !order.IsOpenseaBanned {
 						_, maxPrice := tradeInfo.orders.GetMax()
 						if maxPrice.GreaterThan(order.Price) {
@@ -234,6 +238,28 @@ func (om *OrderManager) floorPriceProcess() {
 	}
 }
 
+/*
+	 SELECT
+		co.id as id,
+		co.order_id as order_id,
+		co.collection_address as collection_address,
+		co.price as price,
+		co.maker as maker,
+		co.token_id as token_id
+	FROM [ob_order_%s] as co
+	JOIN [ob_item_%s] ci
+		ON co.collection_address = ci.collection_address
+		AND co.token_id = ci.token_id
+	WHERE
+		co.order_type = ?
+		AND co.order_status = ?
+		AND co.maker = ci.owner
+		AND (ci.is_opensea_banned, co.marketplace_id) != (true, 1)
+		AND co.id > ?
+	ORDER BY co.id ASC
+	LIMIT 1000
+
+*/
 // loadCollectionTradeInfo 函数主要负责初始化和加载集合(Collection)的交易信息,主要包含以下步骤:
 func (om *OrderManager) loadCollectionTradeInfo() error {
 	// 1. 从数据库加载所有集合信息
