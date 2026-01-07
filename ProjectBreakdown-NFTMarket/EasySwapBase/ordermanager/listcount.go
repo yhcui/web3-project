@@ -42,6 +42,9 @@ func (om *OrderManager) listCountProcess() {
 	}
 
 	// 用于记录需要更新的集合地址
+	//增量更新标记
+	//collections 是一个 map[string]bool 类型的变量
+	//用于记录哪些集合的上架数量发生了变化，需要更新统计数据
 	collections := make(map[string]bool)
 
 	// 创建定时器,每分钟执行一次更新
@@ -54,6 +57,7 @@ func (om *OrderManager) listCountProcess() {
 		case <-ticker.C: // 定时器触发
 			// 将map中记录的集合地址转换为切片
 			var cs []string
+			//索引/键和值，但此处只接收键值
 			for c := range collections {
 				cs = append(cs, c)
 			}
@@ -75,6 +79,7 @@ func (om *OrderManager) listCountProcess() {
 				collections = make(map[string]bool)
 			}
 		case addr := <-om.collectionListedCh: // 接收到集合状态变更通知
+			//无论设置为 true 还是 false，键的存在才是关键
 			collections[strings.ToLower(addr)] = true // 记录需要更新的集合地址
 		case <-om.Ctx.Done(): // 上下文取消时退出
 			xzap.WithContext(om.Ctx).Info("collection list count process exit",
@@ -98,24 +103,26 @@ func (om *OrderManager) countCollectionListed(cs []string) ([]CollectionListed, 
 	// - maker必须是token的owner
 	// - 非OpenSea禁止的item
 	query := fmt.Sprintf(`SELECT co.collection_address,count(distinct (co.token_id)) as list_count
-FROM %s as ci
-         join %s co on co.collection_address = ci.collection_address and co.token_id = ci.token_id
-WHERE  co.order_type = 1
-  and co.order_status = 0
-  and co.maker = ci.owner
-  and (ci.is_opensea_banned, co.marketplace_id) != (true, 1)
-group by co.collection_address`, gdb.GetMultiProjectItemTableName(om.project, om.chain), gdb.GetMultiProjectOrderTableName(om.project, om.chain))
+		FROM %s as ci
+				 join %s co on co.collection_address = ci.collection_address and co.token_id = ci.token_id
+		WHERE  co.order_type = 1
+		  and co.order_status = 0
+		  and co.maker = ci.owner
+		  and (ci.is_opensea_banned, co.marketplace_id) != (true, 1)
+		group by co.collection_address`, gdb.GetMultiProjectItemTableName(om.project, om.chain), gdb.GetMultiProjectOrderTableName(om.project, om.chain))
 
 	// 如果指定了集合地址,则修改查询语句添加collection_address筛选条件
 	if len(cs) > 0 {
+		// 这里只构建SQL
 		query = fmt.Sprintf(`SELECT co.collection_address,count(distinct (co.token_id)) as list_count
-FROM %s as ci
-         join %s co on co.collection_address = ci.collection_address and co.token_id = ci.token_id
-WHERE  co.collection_address in (?) and co.order_type = 1
-  and co.order_status = 0
-  and co.maker = ci.owner
-  and (ci.is_opensea_banned, co.marketplace_id) != (true, 1)
-group by co.collection_address`, gdb.GetMultiProjectItemTableName(om.project, om.chain), gdb.GetMultiProjectOrderTableName(om.project, om.chain))
+			FROM %s as ci
+					 join %s co on co.collection_address = ci.collection_address and co.token_id = ci.token_id
+			WHERE  co.collection_address in (?) 
+			  and co.order_type = 1
+			  and co.order_status = 0
+			  and co.maker = ci.owner
+			  and (ci.is_opensea_banned, co.marketplace_id) != (true, 1)
+			group by co.collection_address`, gdb.GetMultiProjectItemTableName(om.project, om.chain), gdb.GetMultiProjectOrderTableName(om.project, om.chain))
 	}
 
 	// 执行SQL查询

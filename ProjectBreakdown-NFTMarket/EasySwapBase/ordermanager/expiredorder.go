@@ -25,7 +25,7 @@ func (om *OrderManager) orderExpiryProcess() {
 		}
 	}()
 
-	// 2. 启动时从数据库加载所有活跃订单到时间轮队列中
+	// 2. 启动时从数据库加载所有活跃订单到时间轮队列中 -- 数据来源两个,一个服务启动时加载全部数据,还有服务运行中不停的放的数据.
 	if err := om.loadOrdersToQueue(); err != nil {
 		xzap.WithContext(om.Ctx).Error("[Order Manage] load orders to queue", zap.Error(err))
 		return
