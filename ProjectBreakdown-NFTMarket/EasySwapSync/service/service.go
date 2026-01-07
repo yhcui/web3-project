@@ -103,6 +103,7 @@ func (s *Service) Start() error {
 		return errors.Wrap(err, "failed on preload collection to filter")
 	}
 
+	// 同步地板价 同步订单创建 取消 和成交的事件
 	s.orderbookIndexer.Start()
 	s.orderManager.Start()
 	return nil

@@ -70,6 +70,7 @@ func (f *Filter) PreloadCollections() error {
 
 	// Query the addresses directly from the database
 	//从 ob_collection_{chain} 表查询 floor_price_status = 1 的集合
+	// 获取集合的合约地址 -- 已导入地板价
 	err = f.db.WithContext(f.ctx).
 		Table(gdb.GetMultiProjectCollectionTableName(f.project, f.chain)).
 		Select("address").
