@@ -21,7 +21,7 @@ async function main() {
   // console.log(await upgrades.erc1967.getAdminAddress(esVault.address), " esVault getAdminAddress")
 
   // newProtocolShare = 200;
-  // newESVault = "0xaD65f3dEac0Fa9Af4eeDC96E95574AEaba6A2834";
+  // newESVault = "0xb7fEA8EA777bE5a764456Aa830dB714c94c00caa";
   // EIP712Name = "EasySwapOrderBook";
   // EIP712Version = "1";
   // let esDex = await ethers.getContractFactory("EasySwapOrderBook")
@@ -31,8 +31,8 @@ async function main() {
   // console.log(await upgrades.erc1967.getImplementationAddress(esDex.address), " esDex getImplementationAddress")
   // console.log(await upgrades.erc1967.getAdminAddress(esDex.address), " esDex getAdminAddress")
 
-  esDexAddress = "0xcEE5AA84032D4a53a0F9d2c33F36701c3eAD5895"
-  esVaultAddress = "0xaD65f3dEac0Fa9Af4eeDC96E95574AEaba6A2834"
+  esDexAddress = "0xB352FEEbE6803D810a1b9186739689F0429d4361"
+  esVaultAddress = "0xb7fEA8EA777bE5a764456Aa830dB714c94c00caa"
   const esVault = await (
     await ethers.getContractFactory("EasySwapVault")
   ).attach(esVaultAddress)

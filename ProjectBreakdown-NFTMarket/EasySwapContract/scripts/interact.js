@@ -12,13 +12,13 @@ const { toBn } = require("evm-bn")
  */
 
 const esDex_name = "EasySwapOrderBook";
-const esDex_address = "0xcEE5AA84032D4a53a0F9d2c33F36701c3eAD5895"
+const esDex_address = "0xB352FEEbE6803D810a1b9186739689F0429d4361"
 
 const esVault_name = "EasySwapVault";
-const esVault_address = "0xaD65f3dEac0Fa9Af4eeDC96E95574AEaba6A2834"
+const esVault_address = "0xb7fEA8EA777bE5a764456Aa830dB714c94c00caa"
 
 const erc721_name = "TestERC721"
-const erc721_address = "0xF2e0BA02a187F19F5A390E4f990c684d81A833A0"
+const erc721_address = "0x20B58EdCe011027A524D1dd995055a123a8D9C9a"
 
 let esDex, esVault, testERC721
 let deployer
@@ -44,15 +44,15 @@ async function main() {
     await approvalForVault();
 
     // 2. make order
-    await testMakeOrder();
+    // await testMakeOrder();
 
     // for (let i = 1; i < 20; i++) {
     //     await testMakeOrder(i);
     // }
 
     // 3. cancel order
-    // let orderKeys = [];
-    // await testCancelOrder(orderKeys);
+    let orderKeys = ["0xfc37f2ff950f95913eb7182357ba3c14df60ef354bc7d6ab1ba2815f249fffe6"];
+    await testCancelOrder(orderKeys);
 
     // let orderKeys1 = ["0xa48c77f5aa25cd7b0d207b491cf7a0ef5cc5cf15e3c1f9534b6791ef856f0dbe"]
     // let orderKeys2 = ["0x2f01e4ef5cbea217934b2bb27a73fac35032a75ffb030dea41fdb995c55f3069",
@@ -112,6 +112,7 @@ async function testMakeOrder(tokenId = 0) {
     let salt = 1;
     let nftAddress = erc721_address;
     // let tokenId = 0;
+    tokenId = 50;
     let order = {
         side: Side.List,
         saleKind: SaleKind.FixedPriceForItem,

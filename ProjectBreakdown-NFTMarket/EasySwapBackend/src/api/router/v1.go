@@ -41,9 +41,11 @@ func loadV1(r *gin.Engine, svcCtx *svc.ServerCtx) {
 	*/
 	user := apiV1.Group("/user")
 	{
+		// 作用：获取需要签名的消息
 		user.GET("/:address/login-message", v1.GetLoginMessageHandler(svcCtx)) // 生成login签名信息
-		user.POST("/login", v1.UserLoginHandler(svcCtx))                       // 登陆
-		user.GET("/:address/sig-status", v1.GetSigStatusHandler(svcCtx))       // 获取用户签名状态
+		// 前端签完名后，调用login，验证签名是否正确。
+		user.POST("/login", v1.UserLoginHandler(svcCtx))                 // 登陆
+		user.GET("/:address/sig-status", v1.GetSigStatusHandler(svcCtx)) // 获取用户签名状态
 	}
 
 	collections := apiV1.Group("/collections")

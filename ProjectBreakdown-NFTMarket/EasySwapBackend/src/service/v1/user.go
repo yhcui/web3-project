@@ -34,7 +34,7 @@ func UserLogin(ctx context.Context, svcCtx *svc.ServerCtx, req types.LoginReq) (
 	// 返回结果
 	res := types.UserLoginInfo{}
 
-	//todo: add verify signature
+	//todo: add verify signature  与前端一致的，验证签名的方法
 	//ok := verifySignature(req.Message, req.Signature, req.PublicKey)
 	//if !ok {
 	//	return nil, errors.New("invalid signature")

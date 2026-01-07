@@ -1,0 +1,301 @@
+{
+  "info": {
+    "name": "DEX Bot API",
+    "description": "DEX 流动性池和交易路由查询 API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "健康检查",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "获取统计信息",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pools",
+      "item": [
+        {
+          "name": "获取所有池子",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/pools?limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "pools"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "获取以太坊池子",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/pools?chain_id=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "pools"],
+              "query": [
+                {
+                  "key": "chain_id",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "获取 BSC 池子",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/pools?chain_id=56&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "pools"],
+              "query": [
+                {
+                  "key": "chain_id",
+                  "value": "56"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "获取 Uniswap V2 池子",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/pools?dex_name=Uniswap V2&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "pools"],
+              "query": [
+                {
+                  "key": "dex_name",
+                  "value": "Uniswap V2"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "获取单个池子详情",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/pools/0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc?chain_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "pools", "0xB4e16d0168e52d35CaCD2c6185b44281Ec28C9Dc"],
+              "query": [
+                {
+                  "key": "chain_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "获取 WETH 的所有池子",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/pools/token?chain_id=1&token_address=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "pools", "token"],
+              "query": [
+                {
+                  "key": "chain_id",
+                  "value": "1"
+                },
+                {
+                  "key": "token_address",
+                  "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                  "description": "WETH"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Routes",
+      "item": [
+        {
+          "name": "直接路由 - WETH to USDC",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/routes/direct?chain_id=1&token_in=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&token_out=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "routes", "direct"],
+              "query": [
+                {
+                  "key": "chain_id",
+                  "value": "1"
+                },
+                {
+                  "key": "token_in",
+                  "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                  "description": "WETH"
+                },
+                {
+                  "key": "token_out",
+                  "value": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                  "description": "USDC"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "直接路由 - WETH to USDT",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/routes/direct?chain_id=1&token_in=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&token_out=0xdAC17F958D2ee523a2206206994597C13D831ec7",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "routes", "direct"],
+              "query": [
+                {
+                  "key": "chain_id",
+                  "value": "1"
+                },
+                {
+                  "key": "token_in",
+                  "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                  "description": "WETH"
+                },
+                {
+                  "key": "token_out",
+                  "value": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+                  "description": "USDT"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "多跳路由 - WETH to DAI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/routes/multi-hop?chain_id=1&token_in=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&token_out=0x6B175474E89094C44Da98b954EedeAC495271d0F&min_liquidity=10000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "routes", "multi-hop"],
+              "query": [
+                {
+                  "key": "chain_id",
+                  "value": "1"
+                },
+                {
+                  "key": "token_in",
+                  "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                  "description": "WETH"
+                },
+                {
+                  "key": "token_out",
+                  "value": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+                  "description": "DAI"
+                },
+                {
+                  "key": "min_liquidity",
+                  "value": "10000"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "多跳路由 - WBNB to CAKE (BSC)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/routes/multi-hop?chain_id=56&token_in=0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c&token_out=0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82&min_liquidity=50000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "routes", "multi-hop"],
+              "query": [
+                {
+                  "key": "chain_id",
+                  "value": "56"
+                },
+                {
+                  "key": "token_in",
+                  "value": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+                  "description": "WBNB"
+                },
+                {
+                  "key": "token_out",
+                  "value": "0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82",
+                  "description": "CAKE"
+                },
+                {
+                  "key": "min_liquidity",
+                  "value": "50000"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}
+

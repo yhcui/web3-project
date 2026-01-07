@@ -241,11 +241,31 @@ npx hardhat test
 deploy to sepolia testnet
 ```shell
 npx hardhat run --network sepolia scripts/deploy.js
+deployer:  0xf9B0a3288B5bb4269DE6044Af6737ef22c7C6047
+esVault contract deployed to: 0xb7fEA8EA777bE5a764456Aa830dB714c94c00caa
+0x3D25B6743eB55F0Af3cb3334c04f51B2EC3601F8  esVault getImplementationAddress
+0xB57d9Bdace630c4eA2F5ebd9ABF0bA3e2AeA5603  esVault getAdminAddress
+
+
+deployer:  0xf9B0a3288B5bb4269DE6044Af6737ef22c7C6047
+esDex contract deployed to: 0xB352FEEbE6803D810a1b9186739689F0429d4361
+0x57E5355bf1FcE2115d2c75FE8EeEdC5659a0971f  esDex getImplementationAddress
+0xB57d9Bdace630c4eA2F5ebd9ABF0bA3e2AeA5603  esDex getAdminAddress
+
+
 ```
 
 deploy test erc721 
 ```shell
 npx hardhat run --network sepolia scripts/deploy_721.js
+
+0x20B58EdCe011027A524D1dd995055a123a8D9C9a
+```
+
+interact.js 
+```shell
+npx hardhat run --network sepolia scripts/interact.js
+
 ```
 
 ## Advanced
