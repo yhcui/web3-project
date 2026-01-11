@@ -725,7 +725,7 @@ func GetCollectionDetail(ctx context.Context, svcCtx *svc.ServerCtx, chain strin
 		xzap.WithContext(ctx).Error("failed on get floor price", zap.Error(err))
 	}
 
-	// 查询卖单价格
+	// 查询卖单最高价格
 	collectionSell, err := svcCtx.Dao.QueryCollectionSellPrice(ctx, chain, collectionAddr)
 	if err != nil {
 		xzap.WithContext(ctx).Error("failed on get floor price", zap.Error(err))
