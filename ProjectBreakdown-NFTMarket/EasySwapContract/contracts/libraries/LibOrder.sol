@@ -108,10 +108,14 @@ library LibOrder {
             );
     }
 
+    // 判断传入的 OrderKey 是否等于常量
     function isSentinel(OrderKey orderKey) internal pure returns (bool) {
         return OrderKey.unwrap(orderKey) == OrderKey.unwrap(ORDERKEY_SENTINEL);
     }
-
+    /*
+    把哨兵值当作“空/未初始化”标记，用在 OrderStorage.sol 的 orderQueues（head / tail）判断队列是否初始化或为空，从而实现链表边界处理（插入/删除时的特殊分支）。
+    */
+    // 返回 isSentinel 的否定（即判断 OrderKey 不是哨兵值）。
     function isNotSentinel(OrderKey orderKey) internal pure returns (bool) {
         return OrderKey.unwrap(orderKey) != OrderKey.unwrap(ORDERKEY_SENTINEL);
     }

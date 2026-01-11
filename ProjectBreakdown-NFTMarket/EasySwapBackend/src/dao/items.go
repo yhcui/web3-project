@@ -1126,6 +1126,35 @@ func (d *Dao) QueryItemInfo(ctx context.Context, chain, collectionAddr, tokenID 
 // 1. 查询指定NFT集合中特定token id的 Trait价格
 // 2. 通过关联订单表和 Trait表,找出每个 Trait对应的最低挂单价格
 // 3. 返回 Trait价格列表
+/*
+SELECT
+gf_attribute.trait,
+gf_attribute.trait_value,
+MIN(gf_order.price) as price
+FROM
+ob_order_sepolia as gf_order
+JOIN
+ob_item_trait_sepoliaas gf_attribute
+ON gf_order.collection_address = gf_attribute.collection_address
+AND gf_order.token_id = gf_attribute.token_id
+WHERE
+gf_order.collection_address = ?
+AND gf_order.order_type = ?
+AND gf_order.order_status = ?
+AND (gf_attribute.trait, gf_attribute.trait_value) IN (
+SELECT
+gf_attr.trait,
+gf_attr.trait_value
+FROM
+ob_item_trait_sepolia as gf_attr
+WHERE
+gf_attr.collection_address = ?
+AND gf_attr.token_id IN (?)
+)
+GROUP BY
+gf_attribute.trait,
+gf_attribute.trait_value
+*/
 func (d *Dao) QueryTraitsPrice(ctx context.Context, chain, collectionAddr string, tokenIds []string) ([]types.TraitPrice, error) {
 	var traitsPrice []types.TraitPrice
 
