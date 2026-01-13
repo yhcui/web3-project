@@ -123,9 +123,9 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     // 开发者使用 hasNoRefund 而不是 isRefunded， 为了节省 Gas 变量默认值是 false
     struct BorrowInfo {
         uint256 stakeAmount;           // 当前借款的质押金额 -- 用户为了借款而锁定的抵押品数量（即 borrowToken 的数量）。
-        uint256 refundAmount;          // 多余的退款金额 -- 在“超额募集”或“比例配售”逻辑中，借款人原本打算抵押 100 个 BTC 借钱，但因为池子资金额度有限，最终只成交了 80 个 BTC 的借款。剩下的 20 个 BTC 就会记录在 refundAmount 中，等待用户取回
-        bool hasNoRefund;              // 是否已退款 默认为false，false = 未退款，true = 已退款。当池子从 MATCH（匹配）状态进入 EXECUTION（执行）状态时，如果用户提交的抵押品超过了实际借到的钱，这部分“多出来的抵押品”需要退还
-        bool hasNoClaim;               // 是否已认领 默认为false，false = 未认领，true = 已认领。在这种“池子模式”下，借款人在募集期存入抵押品后，并不能立刻拿到借款。必须等到 settleTime（结算时间）过后，确定募集成功了，借款人才能点击“认领”来提取 lendToken
+        uint256 refundAmount;          // 多余质押的退款金额 -- 在“超额募集”或“比例配售”逻辑中，借款人原本打算抵押 100 个 BTC 借钱，但因为池子资金额度有限，最终只成交了 80 个 BTC 的借款。剩下的 20 个 BTC 就会记录在 refundAmount 中，等待用户取回
+        bool hasNoRefund;              // 是否已退款多余质押 默认为false，false = 未退款，true = 已退款。当池子从 MATCH（匹配）状态进入 EXECUTION（执行）状态时，如果用户提交的抵押品超过了实际借到的钱，这部分“多出来的抵押品”需要退还
+        bool hasNoClaim;               // 是否已认领lendToken 默认为false，false = 未认领，true = 已认领。在这种“池子模式”下，借款人在募集期存入抵押品后，并不能立刻拿到借款。必须等到 settleTime（结算时间）过后，确定募集成功了，借款人才能点击“认领”来提取 lendToken
     }
     // Info of each user that stakes tokens.  {user.address : {pool.index : user.borrowInfo}}
     mapping (address => mapping (uint256 => BorrowInfo)) public userBorrowInfo;
@@ -478,7 +478,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
         /**
-     * @dev 退还给借款人的过量存款，当借款人的质押量大于0，且借款供应量减去结算借款量大于0，且借款人没有退款时，计算退款金额并进行退款。
+     * @dev 退还给借款人的过量质押。，当借款人的质押量大于0，且借款供应量减去结算借款量大于0，且借款人没有退款时，计算退款金额并进行退款。
      * @notice 池状态不等于匹配和未完成
      * @param _pid 是池状态
      */
@@ -493,7 +493,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         require(!borrowInfo.hasNoRefund, "refundBorrow: again refund"); // 需要借款人没有退款
         // 计算用户份额
         uint256 userShare = borrowInfo.stakeAmount.mul(calDecimal).div(pool.borrowSupply); // 用户份额等于借款人的质押量乘以计算小数点后的位数，然后除以借款供应量
-        uint256 refundAmount = (pool.borrowSupply.sub(data.settleAmountBorrow)).mul(userShare).div(calDecimal); // 退款金额等于（借款供应量减去结算借款量）乘以用户份额，然后除以计算小数点后的位数
+        // 退款金额等于（借款供应量减去结算借款量）乘以用户份额，然后除以计算小数点后的位数
+        uint256 refundAmount = (pool.borrowSupply.sub(data.settleAmountBorrow)).mul(userShare).div(calDecimal); 
         // 动作
         _redeem(msg.sender,pool.borrowToken,refundAmount); // 赎回
         // 更新用户信息

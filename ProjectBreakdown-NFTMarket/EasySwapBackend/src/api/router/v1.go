@@ -62,15 +62,15 @@ func loadV1(r *gin.Engine, svcCtx *svc.ServerCtx) {
 		collections.GET("/:address/top-trait", v1.ItemTopTraitPriceHandler(svcCtx))                                           //获取NFT Item的Trait的最高价格信息 -- TODO
 		collections.GET("/:address/:token_id/image", middleware.CacheApi(svcCtx.KvStore, 60), v1.GetItemImageHandler(svcCtx)) // 获取NFT Item的图片信息 -- DONE ob_item_external_sepolia
 		collections.GET("/:address/history-sales", v1.HistorySalesHandler(svcCtx))                                            // NFT销售历史价格信息 -- DONE 查询 ob_activity_sepolia
-		collections.GET("/:address/:token_id/owner", v1.ItemOwnerHandler(svcCtx))                                             // 获取NFT Item的owner信息 -- TODO
-		collections.POST("/:address/:token_id/metadata", v1.ItemMetadataRefreshHandler(svcCtx))                               // 刷新NFT Item的metadata -- TODO
+		collections.GET("/:address/:token_id/owner", v1.ItemOwnerHandler(svcCtx))                                             // 获取NFT Item的owner信息 -- DONE 底层调用eth client
+		collections.POST("/:address/:token_id/metadata", v1.ItemMetadataRefreshHandler(svcCtx))                               // 刷新NFT Item的metadata -- DONE 这个方法的后续在哪里？ -- 已整理
 
-		collections.GET("/ranking", middleware.CacheApi(svcCtx.KvStore, 60), v1.TopRankingHandler(svcCtx)) // 获取NFT集合排名信息 -- TODO
+		collections.GET("/ranking", middleware.CacheApi(svcCtx.KvStore, 60), v1.TopRankingHandler(svcCtx)) // 获取NFT集合排名信息 -- Done
 	}
 
 	activities := apiV1.Group("/activities")
 	{
-		activities.GET("", v1.ActivityMultiChainHandler(svcCtx)) // 批量获取activity信息 -- TODO
+		activities.GET("", v1.ActivityMultiChainHandler(svcCtx)) // 批量获取activity信息 -- 就是根据各种条件查活动条
 	}
 
 	portfolio := apiV1.Group("/portfolio")
