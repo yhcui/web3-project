@@ -174,12 +174,18 @@ interface IUniswapV2Router02 {
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external returns (uint amountToken, uint amountETH);
+    /* 
+        输入固定数量的 A 代币，换取尽可能多的 B 代币。
+    */
     function swapExactTokensForTokens(
-        uint amountIn,
-        uint amountOutMin,
-        address[] calldata path,
-        address to,
-        uint deadline
+        uint amountIn, // 你确定要卖出的代币数量
+        uint amountOutMin, // 最小接受数量（滑点保护）
+        address[] calldata path, // 交换路径。例如 [USDT, WBNB, BTC] 表示先用 USDT 换 WBNB，再用 WBNB 换 BTC。
+        address to, // 接收换好的代币的钱包地址
+        uint deadline // 最后期限（时间戳）
+
+        // amounts：一个数组，记录了路径中每一步转换的实际金额。
+        // 比如 path 为 [A, B, C]，那么 amounts[0] 是 A 的输入量，amounts[1] 是中间产物 B 的数量，amounts[2] 是最终拿到的 C 的数量.    
     ) external returns (uint[] memory amounts);
     function swapTokensForExactTokens(
         uint amountOut,
@@ -203,12 +209,72 @@ interface IUniswapV2Router02 {
         payable
         returns (uint[] memory amounts);
 
+    /*
+    在不考虑交易手续费和滑点的情况下，根据当前的池子储备量，计算出两种代币之间的等值比例
+    通俗解释： 如果池子里有 100 个 A 和 200 个 B（比例 1:2），当你问“10 个 A 价值多少个 B”时，quote 会告诉你结果是 20。
+    
+    amountA	    你想要计算的 A 代币的数量。
+    reserveA	交易对（Pair）中 A 代币的当前库存量。
+    reserveB	交易对（Pair）中 B 代币的当前库存量。
+    返回值 amountB	按照当前池子比例，amountA 等值于多少 amountB。
+
+    */
     function quote(uint amountA, uint reserveA, uint reserveB) external pure returns (uint amountB);
+    /*
+    考虑了 0.3% 手续费 和 价格冲击（Price Impact） 的情况下，你实际能兑换到的代币数量。
+
+    amountIn	你准备卖出的代币数量。
+    reserveIn	池子中你卖出的那种代币的当前库存。
+    reserveOut	池子中你想要换回的那种代币的当前库存。
+    返回值 amountOut	实际到手的代币数量（已扣除手续费并计算了滑点）。
+    */
     function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) external pure returns (uint amountOut);
+    /*
+    getAmountIn 是 getAmountOut 的逆运算函数。
+    实现“我想要精确地拿到 100 个 B 代币，请问我最少需要投入多少个 A 代币
+    amountOut	你想要获得的精确代币数量。
+    reserveIn	池子中你准备投入的那种代币的当前库存。
+    reserveOut	池子中你想要换回的那种代币的当前库存。
+    返回值 amountIn	为了换到 amountOut，你最少需要支付的代币数量。
+    */
     function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) external pure returns (uint amountIn);
+
+    /*
+    前端实时报价
+
+    amountIn	uint	路径起点（第一个代币）的输入数量。
+    path	address[]	兑换路径地址数组。例如 [TokenA, TokenB, TokenC]。
+    返回值 amounts	uint[]	结果数组。记录了路径中每一个节点的代币数量。
+    
+    返回数组的具体内容
+    如果你的路径是 [USDT, WBNB, BTC]，返回的 amounts 数组长度将与 path 相同（长度为 3）：
+    amounts[0]：等于你输入的 amountIn（USDT 的数量）。
+    amounts[1]：1 跳之后，得到的 WBNB 数量。
+    amounts[2]：2 跳之后，最终拿到的 BTC 数量。
+
+    */
     function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
     function getAmountsIn(uint amountOut, address[] calldata path) external view returns (uint[] memory amounts);
+    /*
+    removeLiquidity（移除流动性）、ETH（结算为原生代币）、SupportingFeeOnTransferTokens（支持转账收税代币）。
+    它不再严格校验接收到的代币数量是否等于发送量，而是“能收到多少是多少”，只要最终收到的数额大于 amountTokenMin 即可。
+    收代币税 
+    token	            address	与 ETH 配对的那种代币的地址。
+    liquidity		    你准备销毁的 LP 代币数量。
+    amountTokenMin		期望取回的代币最小数量（滑点保护）。
+    amountETHMin		期望取回的 ETH 最小数量（滑点保护）。
+    to	                address	接收资产的地址。
+    deadline		    交易截止时间戳。
 
+    为什么只针对 ETH 有返回值？
+    注意函数定义：returns (uint amountETH)。 它只返回了 ETH 的数量，而没有返回代币的数量。这是因为：
+    由于代币存在收税机制，Router 无法在不增加 Gas 成本的情况下准确预测你最终到手的代币数量。
+    ETH 是标准资产，不收税，所以它的数量是确定可计算的。
+
+    什么时候该用它？
+    项目方/LP 视角：如果你参与的流动性对中，有一种代币是“土狗币”或带有“通缩机制”的代币，移除流动性时必须调用这个函数，否则交易会一直报错。
+    借贷协议视角：如果你的借贷协议支持此类代币作为抵押品，在清算（撤出流动性）时，合约逻辑必须兼容此类函数，以防由于税收导致的清算失败。
+    */
     function removeLiquidityETHSupportingFeeOnTransferTokens(
         address token,
         uint liquidity,
@@ -217,6 +283,7 @@ interface IUniswapV2Router02 {
         address to,
         uint deadline
     ) external returns (uint amountETH);
+
     function removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
         address token,
         uint liquidity,
