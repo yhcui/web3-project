@@ -41,7 +41,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     // 手续费和利率计算基准精度
     uint256 constant internal baseDecimal = 1e8;
 
-    // 最小存款金额
+    // 最小存款金额 -- 每次最小存款量
     uint256 public minAmount = 100e18;
 
     // one years
@@ -85,7 +85,10 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         uint256 interestRate;       // 固定年化利率（基于 baseDecimal）
         uint256 maxSupply;          // 该池子允许借出的资金上限（Hard Cap），防止过度借贷风险。
         uint256 lendSupply;         // 当前池子里已经存入多少钱（出借方提供的资金）。
-        uint256 borrowSupply;       // 当前已经有多少钱被借走了（借款方实际取走的资金）。
+        uint256 borrowSupply;       // 当前已经有多少钱将要借的资产（所有借款方实际允许取走的总资金）。
+        // 若抵押率为60%，则配置166%。 
+        // 重要Pledge里面，就是按照这种说法的： 100万的贷款，需要价值200万的房子；此时配置 200%
+        // Pledge代码，用的是超额抵押系数
         uint256 martgageRate;       // (抵押率): 这是质押率。比如你质押价值 100 美元的 BTC，如果抵押率是 60%，你最多只能借出 60 美元的 BUSD，单位是1e8 (1e8)
         address lendToken;          // (出借代币): 借款人想借入的钱，通常是稳定币（如 BUSD, USDT）
         address borrowToken;        // borrowToken (抵押代币): 借款人抵押给协议的资产（如 BTC, ETH）
@@ -243,7 +246,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
 
     /**
      * @dev 创建一个新的借贷池。
-     * 函数接收一系列参数，包括结算时间、结束时间、利率、最大供应量、抵押率、借款代币、借出代币、SP代币、JP代币和自动清算阈值。
+     * 函数接收一系列参数，包括结算时间、结束时间、利率、当前池子最大存多少、抵押率、存入的（出借）代币、借出代币、SP代币、JP代币和自动清算阈值。
      *  Can only be called by the owner.
      */
     function createPoolInfo(uint256 _settleTime,  uint256 _endTime, uint64 _interestRate,
@@ -263,7 +266,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
             endTime: _endTime,
             interestRate: _interestRate,
             maxSupply: _maxSupply,
-            lendSupply:0,
+            lendSupply:0, //当前已存 
             borrowSupply:0,
             martgageRate: _martgageRate,
             lendToken:_lendToken,
@@ -294,7 +297,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
     /**
-     * 出借人存款
+     * 出借人存款 --- 
      * @dev 存款人执行存款操作
      * @notice 池状态必须为MATCH
      * @param _pid 是池索引
@@ -611,12 +614,43 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         if (pool.lendSupply > 0 && pool.borrowSupply > 0) {
             // 获取标的物价格
             uint256[2]memory prices = getUnderlyingPriceView(_pid);
-            // 总保证金价值 = 保证金数量 * 保证金价格
+            /*
+                prices[0] 来自 pool.lendToken（借出代币 / 存款代币）。 2$
+                prices[1] 来自 pool.borrowToken（借入代币 / 保证金代币）。 6$
+                prices[1] / prices[0]：由于两个价格都是以美元（USD）计价的，这个除法算出了：一个保证金代币等于多少个借出代币
+                保证金是 BTC ($60,000)，借出币是 USDT ($1)。那么汇率就是 60,000 / 1 = 60,000。
+                假如 prices[0]-存-为2$,prices[1]-借-为6$, 则prices[1] / prices[0] = 6$/2$=3$, 3$为1个借等于3个存
+
+                
+                计算总价值： borrowSupply * 汇率
+                将用户提供的保证金数量，转换成等值的“借出代币”数量。
+
+                为什么要这样算？
+                在借贷协议（Pledge）中，系统需要判断用户的抵押率（Health Factor）。
+                用户借走的是 lendToken。
+                用户抵押的是 borrowToken。
+                为了判断用户是否会被清算，系统必须把**抵押品（borrowToken）换算成跟借款（lendToken）**同样的单位。
+                结论： 这段代码计算的是 “当前保证金按市场价折算成借款币种后，一共值多少钱”。
+            */
+            // 总保证金价值 = 保证金数量 * 保证金价格 -- 单位为借出代币
+            // totalValue 计算的是质押人（借款人）质押的资产总价值。 -- 转换成了借出代币的价值。
+            // 作用：将质押的钱计算一下等于多少借出的代币。其实还是质押的钱，只是换了单位。
             uint256 totalValue = pool.borrowSupply.mul(prices[1].mul(calDecimal).div(prices[0])).div(calDecimal);
-            // 转换为稳定币价值
+
+            // 这段代码的真实逻辑是“在结算/执行阶段（Execution），根据质押物的价值反推：这笔钱到底够不够赔给出借人”
+            // 当前的质押物（以借出币计价），在满足质押率要求的前提下，最高能支撑多少债务。
+            /*
+            逻辑推导：
+            假设质押率 martgageRate = 60%（即 0.6）。
+            你的质押物总价值 totalValue = 600 USDT。
+            actualValue = 600 / 0.6 = 1000 USDT。
+            这个1000的含义是：只要出借人存入的钱（lendSupply）不超过 1000，这笔交易就是安全的；
+            如果超过 1000，说明质押物价值不足，出借人的钱已经处于风险中了。
+            */
             uint256 actualValue = totalValue.mul(baseDecimal).div(pool.martgageRate);
             if (pool.lendSupply > actualValue){
-                // 总借款大于总借出
+                // 代表出借人大于actualValue那部分钱可能拿不回来。
+                // 总出借的存的钱，大于需要借出的钱
                 data.settleAmountLend = actualValue;
                 data.settleAmountBorrow = pool.borrowSupply;
             } else {
@@ -838,7 +872,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         require(success && (data.length == 0 || abi.decode(data, (bool))), "!safeApprove");
     }
 
-       /**
+    /**
      * @dev 获取最新的预言机价格
      */
     function getUnderlyingPriceView(uint256 _pid) public view returns(uint256[2]memory){

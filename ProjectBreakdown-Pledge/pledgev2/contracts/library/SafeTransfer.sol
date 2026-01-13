@@ -22,6 +22,7 @@ contract SafeTransfer{
             amount = msg.value;
         }else if (amount > 0){
             IERC20 oToken = IERC20(token);
+            // 必须先授权
             oToken.safeTransferFrom(msg.sender, address(this), amount);
         }
         return amount;
