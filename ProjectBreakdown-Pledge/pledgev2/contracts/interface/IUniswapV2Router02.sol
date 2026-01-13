@@ -293,7 +293,14 @@ interface IUniswapV2Router02 {
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
     ) external returns (uint amountETH);
-
+    
+    /*
+    amountIn	    你卖出的代币数量（这部分在进入第一个池子前可能就会被扣税）。
+    amountOutMin	最少到手金额。虽然支持扣税，但如果扣完税后的金额低于这个值，交易依然会失败，防止被“夹子”或过高的税收吸干。
+    path	        交易路径，例如 [USDT, 某收税代币]。
+    to	            最终接收代币的地址。
+    deadline	    交易截止时间。
+    */
     function swapExactTokensForTokensSupportingFeeOnTransferTokens(
         uint amountIn,
         uint amountOutMin,
