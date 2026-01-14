@@ -38,7 +38,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     uint256 constant internal calDecimal = 1e18;
 
     // Based on the decimal of the commission and interest
-    // 手续费和利率计算基准精度
+    // 手续费和利率计算基准精度 
+    // 1e8 是一种科学计数法（Scientific Notation）的表示方式。 意思是 1 乘以 10 的 8 次方
     uint256 constant internal baseDecimal = 1e8;
 
     // 最小存款金额 -- 每次最小存款量
@@ -71,10 +72,11 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     // 预言机地址
     IBscPledgeOracle public oracle;
     // fee
-    // 出借手续费率
+    // 出借手续费率 -  当借款人偿还贷款时，协议向出借人收取的费用
+    // lendFee 本质上是协议从借款人那里收取的费用，但它与借款人归还的本金和利息一起计算
     uint256 public lendFee;
 
-    // 借入手续费率
+    // 是借款人需要支付的手续费率，以 baseDecimal（1e8）为精度单位。
     uint256 public borrowFee;
 
     // 每个池的基本信息
@@ -82,7 +84,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     struct PoolBaseInfo{
         uint256 settleTime;         // 结算时间 这通常是池子停止“匹配”进入“执行”状态的时间点。在此时间之后，借款人和出借人的关系正式确立，开始计算利息。
         uint256 endTime;            // (借贷结束时间): 借款的到期日。到期后，借款人必须归还本息，否则会面临违约或强制清算
-        uint256 interestRate;       // 固定年化利率（基于 baseDecimal）
+        uint256 interestRate;       // 固定年化利率（基于 baseDecimal）5% 即为5000000
         uint256 maxSupply;          // 该池子允许借出的资金上限（Hard Cap），防止过度借贷风险。
         uint256 lendSupply;         // 当前池子里已经存入多少钱（出借方提供的资金）。
         uint256 borrowSupply;       // 当前已经有多少钱将要借的资产（所有借款方实际允许取走的总资金）。
@@ -108,7 +110,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     struct PoolDataInfo{
         // 结算快照 - 募集结束，进入执行期（EXECUTION）那一刻 - 这是计算利息的基数。从这一刻起，池子不再接受新钱，利息开始根据这个实际金额滚动
         uint256 settleAmountLend;       // 结算时的实际出借金额-- 池子最终募集到了多少钱 比如 maxSupply 是 100 万，但只募集到了 80 万，那么结算时这个值就是 80 万。
-        uint256 settleAmountBorrow;     // 结算时的实际借款金额 -- 借款人实际抵押了多少资产对应的借款额度。
+        uint256 settleAmountBorrow;     // 结算时的实际抵押金额 -- 借款人实际抵押了多少资产对应的借款额度。
         
         // 完成快照 - 借贷到期（endTime），借款人正常还款后 - 用于验证还款是否完整。如果这个金额达到了预期值，池子状态才会转为 FINISH，并释放抵押品给借款人
         uint256 finishAmountLend;       // 完成时的实际出借金额 -- 此时的金额 = settleAmountLend + 利息。这是出借人（spCoin 持有者）最终可以瓜分的总金额
@@ -698,36 +700,129 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         (address token0, address token1) = (pool.borrowToken, pool.lendToken);
 
         // 计算时间比率 = ((结束时间 - 结算时间) * 基础小数)/365天
+        /*
+        为什么要乘以 baseDecimal？
+        1. 保持精度
+        pool.endTime.sub(pool.settleTime) 得到的是秒数差值
+        baseYear 是 365 days（以秒为单位）
+        如果直接做除法 (endTime - settleTime) / baseYear，由于 Solidity 中整数除法会截断小数部分，可能导致精度丢失
+        
+        2. 高精度计算
+        通过先乘以 baseDecimal (1e8)，将结果放大：
+        (endTime - settleTime) × 1e8 / baseYear
+        这样计算出的时间比例是以 1e8 为精度的浮点数表示
+        例如：如果有 180 天的借款期，结果约为 0.493 * 1e8 = 49300000
+
+        理论上到天数就够了，因为：
+            金融借贷通常按天计息，秒级精度在实际应用中意义不大
+            365天内，天级精度已经足够满足绝大多数DeFi应用的需求
+
+        但当前代码使用高精度的原因：
+            与系统整体架构保持一致
+            保留了更精细的计算能力
+            适应不同长度的借贷周期
+        */
         uint256 timeRatio = ((pool.endTime.sub(pool.settleTime)).mul(baseDecimal)).div(baseYear);
 
+        /*  
+        为什么是1e16？
+        这里有两次精度调整的原因：
+
+        1. 利率精度转换
+            pool.interestRate 使用 baseDecimal (1e8) 作为精度，例如 5% 表示为 5e6 (即 5000000)
+            timeRatio 也是以 baseDecimal (1e8) 为精度的数值
+        2. 双重精度消除
+            当计算 timeRatio * pool.interestRate 时：
+            timeRatio (精度 1e8) × pool.interestRate (精度 1e8) = 结果精度为 1e16
+            所以需要用 div(1e16) 来消除多余的精度
+        */
         // 计算利息 = 时间比率 * 利率 * 结算贷款金额
         uint256 interest = timeRatio.mul(pool.interestRate.mul(data.settleAmountLend)).div(1e16);
 
         // 计算贷款金额 = 结算贷款金额 + 利息
         uint256 lendAmount = data.settleAmountLend.add(interest);
 
-        // 计算销售金额 = 贷款金额*(1+贷款费)
+        // 计算销售金额 = 贷款金额*(1+贷款费) baseDecimal即是1
+        /*
+        为什么要加lendFee.add(baseDecimal)？
+        这里的 lendFee 是费率，而不是倍数：
+
+        lendFee = 1000000 表示 1% 的费用（因为 baseDecimal = 1e8，所以 1% = 1e8 × 0.01 = 1e6）
+        如果要计算 本金 + 费用，需要：本金 × (1 + 费率)
+        所以 lendAmount × (1 + lendFee/baseDecimal) = lendAmount × (baseDecimal + lendFee) / baseDecimal
+
+        为什么要加 baseDecimal？
+            lendFee 本身只是费率部分（1% = 1e6）
+            lendFee.add(baseDecimal) 代表 1 + 费率（101% = 101e6）
+            这样计算的结果是：本金 + 费用总额        
+        为什么要除以 baseDecimal？
+            lendFee 和 baseDecimal 都是以 1e8 为精度的值
+            lendFee = 1% 时，值为 1000000 (1e6)
+            baseDecimal = 100000000 (1e8)    
+        除以 baseDecimal 是为了消除精度放大的影响，因为在第1步中我们把百分比值扩大了 baseDecimal 倍，所以需要除回去。
+        */
+        
+        // 需要偿还的本金+利息+费用 ,lendToken（借款代币）来偿还债务。
         uint256 sellAmount = lendAmount.mul(lendFee.add(baseDecimal)).div(baseDecimal);
 
         // 执行交换操作
+        /*
+            这一行代码的作用是在去中心化交易所（DEX）上将抵押品代币（borrowToken）兑换为借款代币（lendToken）
+            1. 兑换目的
+            在借贷池结束（finish 函数执行）时，借款人需要偿还债务（本金+利息+费用），
+            协议需要将借款人抵押的资产（borrowToken）兑换成当初借出的资产（lendToken）来偿还给出借人。
+            参数说明
+            swapRouter：DEX 路由器地址（如 PancakeSwap）
+            token0：抵押品代币（borrowToken）
+            token1：借款代币（lendToken）
+            sellAmount：需换出多少借款代币
+
+            返回值含义
+            amountSell：实际出售的抵押品数量（borrowToken）
+            amountIn：兑换得到的借款代币数量（lendToken）
+
+            业务流程
+            1、借款人抵押 borrowToken（如 BTC）
+            2、借出 lendToken（如 BUSD）
+            3、到期时，将抵押的 borrowToken 兑换成 lendToken 来偿还债务
+        */
         (uint256 amountSell,uint256 amountIn) = _sellExactAmount(swapRouter,token0,token1,sellAmount);
 
         // 验证交换后的金额是否大于等于贷款金额
+        /*
+        确保兑换得到的 lendToken 数量足够偿还借款本金、利息和费用，防止因滑点过大导致资金损失。
+
+        为什么不会"永远"失败
+
+        1. 设计考虑
+        在 settle() 函数中，系统已经根据抵押品价值和抵押率计算了最大可借金额
+        data.settleAmountLend 应该是在抵押品价值范围内的
+
+        2. 清算机制
+        如果抵押品价值大幅下降，应该在 liquidate() 函数中进行清算，而不是等到 finish() 函数
+        checkoutLiquidate() 函数会检查抵押品是否低于阈值
+
+
+        */
         require(amountIn >= lendAmount, "finish: Slippage is too high");
 
         // 如果交换后的金额大于贷款金额，计算费用并赎回
         if (amountIn > lendAmount) {
             uint256 feeAmount = amountIn.sub(lendAmount) ;
-            // 贷款费
+            // 贷款费 -- 实际转账给费用的接收地址
             _redeem(feeAddress,pool.lendToken, feeAmount);
             data.finishAmountLend = amountIn.sub(feeAmount);
         }else {
             data.finishAmountLend = amountIn;
         }
 
-        // 计算剩余的借款金额并赎回借款费
+        // 计算剩余抵押品：remianNowAmount 是抵押品 borrowToken 的剩余数量
+        // 计算剩余的借款人抵押数量还剩余多少
         uint256 remianNowAmount = data.settleAmountBorrow.sub(amountSell);
-        uint256 remianBorrowAmount = redeemFees(borrowFee,pool.borrowToken,remianNowAmount);
+
+        // 收取借款手续费：对这部分剩余抵押品收取 borrowFee 的手续费   
+        // 费用处理：通过 redeemFees 函数将手续费转给费用接收地址
+        uint256 remianBorrowAmount = redeemFees(borrowFee, pool.borrowToken, remianNowAmount);
         data.finishAmountBorrow = remianBorrowAmount;
 
         // 更新池子状态为完成
@@ -803,7 +898,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         uint256 fee = amount.mul(feeRatio)/baseDecimal;
         // 如果费用大于0
         if (fee>0){
-            // 从费用地址赎回相应的费用
+            // 从费用地址赎回相应的费用 -- 实际转账操作
             _redeem(feeAddress,token, fee);
         }
         // 返回金额减去费用
@@ -823,6 +918,16 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
      /**
+      参数说明
+            swapRouter：DEX 路由器地址（如 PancakeSwap）
+            token0：抵押品代币（borrowToken）
+            token1：借款代币（lendToken）
+            sellAmount：需要出售的抵押品数量
+
+            返回值含义
+            amountSell：实际出售的抵押品数量（borrowToken）
+            amountIn：兑换得到的借款代币数量（lendToken）
+
       * @dev Get input based on output
       */
     function _getAmountIn(address _swapRouter,address token0,address token1,uint256 amountOut) internal view returns (uint256){
@@ -833,6 +938,16 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
      /**
+        参数说明
+            swapRouter：DEX 路由器地址（如 PancakeSwap）
+            token0：抵押品代币（borrowToken） 输入代币（源代币，如BTC）
+            token1：借款代币（lendToken） 输出代币（目标代币，如BUSD）
+            amountout：需要出售的抵押品数量 期望获得的目标代币数量
+
+            返回值含义
+            amountSell：实际出售的抵押品数量（borrowToken）
+            amountIn：兑换得到的借款代币数量（lendToken）
+
       * @dev sell Exact Amount
       */
     function _sellExactAmount(address _swapRouter,address token0,address token1,uint256 amountout) internal returns (uint256,uint256){
@@ -851,6 +966,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
             _safeApprove(token1, address(_swapRouter), uint256(-1));
         }
         IUniswapV2Router02 IUniswap = IUniswapV2Router02(_swapRouter);
+        //  获取兑换路径
         address[] memory path = _getSwapPath(_swapRouter,token0,token1);
         uint256[] memory amounts;
         if(token0 == address(0)){

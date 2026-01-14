@@ -242,8 +242,8 @@ interface IUniswapV2Router02 {
     /*
     前端实时报价
 
-    amountIn	uint	路径起点（第一个代币）的输入数量。
-    path	address[]	兑换路径地址数组。例如 [TokenA, TokenB, TokenC]。
+    amountIn	    uint	路径起点（第一个代币）的输入数量。
+    path	        address[]	兑换路径地址数组。例如 [TokenA, TokenB, TokenC]。
     返回值 amounts	uint[]	结果数组。记录了路径中每一个节点的代币数量。
     
     返回数组的具体内容
