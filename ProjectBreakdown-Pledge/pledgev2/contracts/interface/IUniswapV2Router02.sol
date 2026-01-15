@@ -254,6 +254,10 @@ interface IUniswapV2Router02 {
 
     */
     function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
+
+
+    // 根据期望获得的目标代币数量和兑换路径，计算出每一跳交易中所需的输入代币数量数组（包含手续费和滑点计算）
+    // 想要得到amountOut，需要输入多少
     function getAmountsIn(uint amountOut, address[] calldata path) external view returns (uint[] memory amounts);
     /*
     removeLiquidity（移除流动性）、ETH（结算为原生代币）、SupportingFeeOnTransferTokens（支持转账收税代币）。

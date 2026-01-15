@@ -113,8 +113,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         uint256 settleAmountBorrow;     // 结算时的实际抵押金额 -- 借款人实际抵押了多少资产对应的借款额度。
         
         // 完成快照 - 借贷到期（endTime），借款人正常还款后 - 用于验证还款是否完整。如果这个金额达到了预期值，池子状态才会转为 FINISH，并释放抵押品给借款人
-        uint256 finishAmountLend;       // 完成时的实际出借金额 -- 此时的金额 = settleAmountLend + 利息。这是出借人（spCoin 持有者）最终可以瓜分的总金额
-        uint256 finishAmountBorrow;     // 完成时的实际借款金额 -- 借款人归还的资金
+        uint256 finishAmountLend;       // 完成时的实际出借金额(已去掉出借手续费) -- 此时的金额 = settleAmountLend + 利息。这是出借人（spCoin 持有者）最终可以瓜分的总金额
+        uint256 finishAmountBorrow;     // 完成时的实际还有多少抵押的资产
         // 清算快照 -- 发生强制清算（LIQUIDATION）那一刻 --  计算亏损率。在极端行情下，抵押品卖出的钱可能覆盖不了本息。通过这个字段，合约可以计算出出借人最后能拿回 $80\%$ 还是 $100\%$ 的本金
         uint256 liquidationAmounLend;   // 清算时的实际出借金额 -- 清算发生时，由于卖出了抵押品，池子实际收回了多少钱用来补偿出借人。
         uint256 liquidationAmounBorrow; // 清算时的实际借款金额 -- 被清算时，被强平掉的抵押品数量。
@@ -818,6 +818,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
 
         // 计算剩余抵押品：remianNowAmount 是抵押品 borrowToken 的剩余数量
         // 计算剩余的借款人抵押数量还剩余多少
+        // amountSell：实际出售的抵押品数量（borrowToken）
         uint256 remianNowAmount = data.settleAmountBorrow.sub(amountSell);
 
         // 收取借款手续费：对这部分剩余抵押品收取 borrowFee 的手续费   
@@ -956,6 +957,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
     /**
+     * 实际换代表
+     * 输入amoun0的token0代表，换取多少token1的代表
       * @dev Swap
       */
     function _swap(address _swapRouter,address token0,address token1,uint256 amount0) internal returns (uint256) {
@@ -984,6 +987,22 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
      * @dev Approve
      */
     function _safeApprove(address token, address to, uint256 value) internal {
+        /*
+            使用 Solidity 的低级 call 方法向代币合约发起调用
+            这是一种动态调用合约方法的方式，可以处理不同的 ERC20 实现差异
+            keccak256("approve(address,uint256)") // 取前4字节 = 0x095ea7b3
+
+            为什么使用这种方式？
+            兼容性处理
+                不同的 ERC20 代币合约实现可能存在差异
+                某些合约可能在返回值处理上有所不同
+                使用低级调用可以避免因接口差异导致的问题
+            避免常见问题
+                标准的 IERC20(token).approve() 可能在某些合约上失败
+                使用 call 可以更好地处理不同实现的合约
+                对返回值进行双重验证确保操作成功
+            这种实现方式是一种更加健壮的 ERC20 授权方法，特别适用于需要与多种不同代币合约交互的 DeFi 协议。
+        */
         (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x095ea7b3, to, value));
         require(success && (data.length == 0 || abi.decode(data, (bool))), "!safeApprove");
     }
