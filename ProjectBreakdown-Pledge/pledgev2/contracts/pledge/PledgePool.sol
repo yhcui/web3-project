@@ -843,7 +843,25 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         PoolDataInfo storage data = poolDataInfo[_pid]; // 获取池数据信息
         // 保证金价格
         uint256[2]memory prices = getUnderlyingPriceView(_pid); // 获取标的价格视图
+
         // 保证金当前价值 = 保证金数量 * 保证金价格
+        /*
+            data.settleAmountBorrow：结算时的抵押代币数量（borrowToken）
+            prices[0]：借出代币（lendToken）的价格
+            prices[1]：抵押代币（borrowToken）的价格
+            calDecimal：精度调节因子（1e18）
+            第一步：prices[1].mul(calDecimal).div(prices[0])
+                计算抵押代币相对于借出代币的汇率
+                例如：如果抵押品是BTC（价格$60,000），借出代币是USDT（价格$1）
+                汇率 = 60000 * 1e18 / 1 = 60000e18
+            第二步：data.settleAmountBorrow.mul(...)
+                用抵押品数量乘以上述汇率
+                结果是将抵押品价值转换为借出代币单位    
+            第三步：.div(calDecimal)
+                消除精度调节带来的额外放大效果
+                得到最终的抵押品总价值
+                
+        */
         uint256 borrowValueNow = data.settleAmountBorrow.mul(prices[1].mul(calDecimal).div(prices[0])).div(calDecimal);
         // 清算阈值 = settleAmountLend*(1+autoLiquidateThreshold)
         uint256 valueThreshold = data.settleAmountLend.mul(baseDecimal.add(pool.autoLiquidateThreshold)).div(baseDecimal);
@@ -1019,6 +1037,10 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         assets[0] = uint256(pool.lendToken);
         assets[1] = uint256(pool.borrowToken);
         // 从预言机获取资产的价格
+        /*
+            prices[0]：lendToken（借出代币）的价格
+            prices[1]：borrowToken（抵押代币）的价格
+        */
         uint256[]memory prices = oracle.getPrices(assets);
         // 返回价格数组
         return [prices[0],prices[1]];
