@@ -97,7 +97,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         PoolState state;            // 状态 'MATCH, EXECUTION, FINISH, LIQUIDATION, UNDONE'
         IDebtToken spCoin;          // 出借凭证代币 sp_token的erc20地址 (比如 spBUSD_1..)出借人的凭证。你存入 BUSD，协议给你 spBUSD。持有它意味着你有权在结束时取回本息。
         IDebtToken jpCoin;          // 借入凭证代币 jp_token的erc20地址 (比如 jpBTC_1..),借款人的凭证。它记录了你的债务，通常只有销毁它（还钱）才能取回抵押的 borrowToken
-        uint256 autoLiquidateThreshold; // 自动清算阈值 (触发清算阈值)
+        uint256 autoLiquidateThreshold; // 自动清算阈值 (触发清算阈值) 如果要设置10%的清算阈值，实际存储值为 10000000（10% × 1e8）
     }
     // total base pool.
     PoolBaseInfo[] public poolBaseInfo;
@@ -434,7 +434,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
     /**
-     * 紧急提取出借资金
+     * 紧急提取出借资金 该函数只允许在 [PoolState.UNDONE] 状态下调用
+     * 紧急：指在协议异常情况下提供资金提取通道 -- 即池子状态为 [PoolState.UNDONE]
      * @dev 紧急提取贷款
      * @notice 池状态必须是未完成
      * @param _pid 是池索引
@@ -569,8 +570,12 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         }
     }
        /**
-     * @dev 紧急借款提取
-     * @notice 在极端情况下，总存款为0，或者总保证金为0，在某些极端情况下，如总存款为0或总保证金为0时，借款者可以进行紧急提取。首先，代码会获取池子的基本信息和借款者的借款信息，然后检查借款供应和借款者的质押金额是否大于0，以及借款者是否已经进行过退款。如果这些条件都满足，那么就会执行赎回操作，并标记借款者已经退款。最后，触发一个紧急借款提取的事件。
+     * @dev 紧急借款提取 该函数只允许在 [PoolState.UNDONE]状态调用
+     * 紧急：指在协议异常情况下提供资金提取通道 -- 即池子状态为 [PoolState.UNDONE]
+     * @notice 
+     * 在极端情况下，总存款为0，或者总保证金为0，在某些极端情况下，如总存款为0或总保证金为0时，借款者可以进行紧急提取。
+     * 首先，代码会获取池子的基本信息和借款者的借款信息，然后检查借款供应和借款者的质押金额是否大于0，以及借款者是否已经进行过退款。
+     * 如果这些条件都满足，那么就会执行赎回操作，并标记借款者已经退款。最后，触发一个紧急借款提取的事件。
      * @param _pid 是池子的索引
      */
     function emergencyBorrowWithdrawal(uint256 _pid) external nonReentrant notPause stateUndone(_pid) {
@@ -864,6 +869,19 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         */
         uint256 borrowValueNow = data.settleAmountBorrow.mul(prices[1].mul(calDecimal).div(prices[0])).div(calDecimal);
         // 清算阈值 = settleAmountLend*(1+autoLiquidateThreshold)
+        /*
+        data.settleAmountLend：结算时的实际出借金额（借款人的债务总额）
+        baseDecimal：精度基准（1e8）
+        pool.autoLiquidateThreshold：自动清算阈值（精度为1e8）
+
+        清算阈值：当抵押品当前价值低于此阈值时触发清算
+        安全边际：autoLiquidateThreshold提供了额外的安全缓冲区
+        举例：如果债务是1000 USDT，清算阈值是10%（10000000 in 1e8），则阈值为1100 USDT
+        举例：
+            假设借款1000 USDT，autoLiquidateThreshold 设置为10%（值为10000000）
+            清算阈值 = 1000 × (1 + 0.1) = 1100 USDT
+            当抵押品当前价值 < 1100 USDT 时触发清算
+        */
         uint256 valueThreshold = data.settleAmountLend.mul(baseDecimal.add(pool.autoLiquidateThreshold)).div(baseDecimal);
         return borrowValueNow < valueThreshold; // 如果保证金当前价值小于清算阈值，则返回true，否则返回false
     }
