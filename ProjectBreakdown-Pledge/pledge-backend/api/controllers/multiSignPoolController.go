@@ -1,13 +1,14 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
 	"pledge-backend/api/common/statecode"
 	"pledge-backend/api/models/request"
 	"pledge-backend/api/models/response"
 	"pledge-backend/api/services"
 	"pledge-backend/api/validate"
 	"pledge-backend/log"
+
+	"github.com/gin-gonic/gin"
 )
 
 type MultiSignPoolController struct {
@@ -35,6 +36,7 @@ func (c *MultiSignPoolController) SetMultiSign(ctx *gin.Context) {
 	return
 }
 
+// 获取多签信息
 func (c *MultiSignPoolController) GetMultiSign(ctx *gin.Context) {
 	res := response.Gin{Res: ctx}
 	req := request.GetMultiSign{}

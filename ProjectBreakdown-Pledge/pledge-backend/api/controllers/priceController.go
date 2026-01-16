@@ -26,6 +26,8 @@ func (c *PriceController) NewPrice(ctx *gin.Context) {
 		}
 	}()
 	//WebSocket 升级
+	//使用 websocket.Upgrader 将 HTTP 连接升级为 WebSocket 连接
+	//一旦升级成功，就不再使用 HTTP 响应返回数据
 	conn, err := (&websocket.Upgrader{
 		ReadBufferSize:   1024,
 		WriteBufferSize:  1024,
@@ -54,5 +56,6 @@ func (c *PriceController) NewPrice(ctx *gin.Context) {
 		LastTime: time.Now().Unix(),      // 最后活动时间戳
 	}
 
+	//通过 server.ReadAndWrite() 启动 WebSocket 服务
 	go server.ReadAndWrite()
 }

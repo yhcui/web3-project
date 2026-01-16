@@ -6,6 +6,7 @@ import (
 	"pledge-backend/db"
 )
 
+// 质押池子里放的Token信息
 type TokenInfo struct {
 	Id      int32  `json:"-" gorm:"column:id;primaryKey"`
 	Symbol  string `json:"symbol" gorm:"column:symbol"`
@@ -26,6 +27,7 @@ func NewTokenInfo() *TokenInfo {
 	return &TokenInfo{}
 }
 
+// 根据chain_id 获取token列表
 func (m *TokenInfo) GetTokenInfo(req *request.TokenList) (error, []TokenInfo) {
 	var tokenInfo = make([]TokenInfo, 0)
 	err := db.Mysql.Table("token_info").Where("chain_id", req.ChainId).Find(&tokenInfo).Debug().Error
@@ -35,6 +37,7 @@ func (m *TokenInfo) GetTokenInfo(req *request.TokenList) (error, []TokenInfo) {
 	return nil, tokenInfo
 }
 
+// 根据chain_id 获取token_list
 func (m *TokenInfo) GetTokenList(req *request.TokenList) (error, []TokenList) {
 	var tokenList = make([]TokenList, 0)
 	err := db.Mysql.Table("token_info").Where("chain_id", req.ChainId).Find(&tokenList).Debug().Error

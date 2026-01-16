@@ -24,6 +24,7 @@ type PoolBaseInfo struct {
 	State                  string          `json:"state"`
 }
 
+// 创建合约时，池子详细信息
 type PoolBases struct {
 	Id                     int    `json:"-" gorm:"column:id;primaryKey"`
 	PoolID                 int    `json:"pool_id" gorm:"column:pool_id;"`

@@ -61,7 +61,12 @@ func GetExchangePrice() {
 		log.Logger.Sugar().Errorf("Error: %s", err.Error())
 		return
 	}
-
+	/*
+		这里怎么根据PLGR-USDT确认这是官方发的？
+			KuCoin交易所只会在其平台上列出经过审核认证的交易对
+			PLGR-USDT 交易对的存在本身就表示它已经通过了KuCoin的上币审核
+	*/
+	// 目标是获取 PLGR-USDT 交易对 的实时价格数据
 	ch := kucoin.NewSubscribeMessage("/market/ticker:PLGR-USDT", false)
 	uch := kucoin.NewUnsubscribeMessage("/market/ticker:PLGR-USDT", false)
 

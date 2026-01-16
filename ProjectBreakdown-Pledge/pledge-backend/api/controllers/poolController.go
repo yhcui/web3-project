@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
 	"pledge-backend/api/common/statecode"
 	"pledge-backend/api/models"
 	"pledge-backend/api/models/request"
@@ -12,11 +11,14 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type PoolController struct {
 }
 
+// 根据chain_id获取池子信息
 func (c *PoolController) PoolBaseInfo(ctx *gin.Context) {
 	res := response.Gin{Res: ctx}
 	req := request.PoolBaseInfo{}
@@ -38,6 +40,7 @@ func (c *PoolController) PoolBaseInfo(ctx *gin.Context) {
 	return
 }
 
+// 获取PoolData对象
 func (c *PoolController) PoolDataInfo(ctx *gin.Context) {
 	res := response.Gin{Res: ctx}
 	req := request.PoolDataInfo{}
@@ -59,6 +62,7 @@ func (c *PoolController) PoolDataInfo(ctx *gin.Context) {
 	return
 }
 
+// 获取chain_id的token列表
 func (c *PoolController) TokenList(ctx *gin.Context) {
 
 	req := request.TokenList{}
@@ -104,6 +108,7 @@ func (c *PoolController) TokenList(ctx *gin.Context) {
 	return
 }
 
+// 根据条件分页查询Poolbase信息以及Pooldata信息
 func (c *PoolController) Search(ctx *gin.Context) {
 	res := response.Gin{Res: ctx}
 	req := request.Search{}
@@ -127,6 +132,7 @@ func (c *PoolController) Search(ctx *gin.Context) {
 	return
 }
 
+// 获取token 列表
 func (c *PoolController) DebtTokenList(ctx *gin.Context) {
 	res := response.Gin{Res: ctx}
 	req := request.TokenList{}

@@ -18,6 +18,7 @@ type PoolData struct {
 	UpdatedAt              string `json:"updated_at" gorm:"column:updated_at"`
 }
 
+// 和合约里的PoolData 结构体一致
 type PoolDataInfoRes struct {
 	Index    int      `json:"index"`
 	PoolData PoolData `json:"pool_data"`
@@ -31,6 +32,7 @@ func (p *PoolData) TableName() string {
 	return "pooldata"
 }
 
+// 根据链ID获取池子列表
 func (p *PoolData) PoolDataInfo(chainId int, res *[]PoolDataInfoRes) error {
 	var poolData []PoolData
 

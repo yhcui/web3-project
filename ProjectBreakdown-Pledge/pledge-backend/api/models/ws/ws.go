@@ -136,12 +136,14 @@ func (s *Server) ReadAndWrite() {
 	}
 }
 
+// 启动websocket客户端
 func StartServer() {
 	log.Logger.Info("WsServer start")
 	for {
 		select {
 		case price, ok := <-kucoin.PlgrPriceChan:
 			if ok {
+				// 只能单机
 				Manager.Servers.Range(func(key, value interface{}) bool {
 					value.(*Server).SendToClient(price, SuccessCode)
 					return true
