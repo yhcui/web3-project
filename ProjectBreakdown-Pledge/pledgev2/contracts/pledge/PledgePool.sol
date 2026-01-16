@@ -109,8 +109,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     // PoolDataInfo 结构体是专门用来记录池子在不同生命周期节点下的资产快照
     struct PoolDataInfo{
         // 结算快照 - 募集结束，进入执行期（EXECUTION）那一刻 - 这是计算利息的基数。从这一刻起，池子不再接受新钱，利息开始根据这个实际金额滚动
-        uint256 settleAmountLend;       // 结算时的实际出借金额-- 池子最终募集到了多少钱 比如 maxSupply 是 100 万，但只募集到了 80 万，那么结算时这个值就是 80 万。
-        uint256 settleAmountBorrow;     // 结算时的实际抵押金额 -- 借款人实际抵押了多少资产对应的借款额度。
+        uint256 settleAmountLend;       // token0，结算时的实际出借金额-- 池子最终募集到了多少钱 比如 maxSupply 是 100 万，但只募集到了 80 万，那么结算时这个值就是 80 万。
+        uint256 settleAmountBorrow;     // token1,结算时的实际抵押金额 -- 借款人实际抵押了多少资产对应的借款额度。
         
         // 完成快照 - 借贷到期（endTime），借款人正常还款后 - 用于验证还款是否完整。如果这个金额达到了预期值，池子状态才会转为 FINISH，并释放抵押品给借款人
         uint256 finishAmountLend;       // 完成时的实际出借金额(已去掉出借手续费) -- 此时的金额 = settleAmountLend + 利息。这是出借人（spCoin 持有者）最终可以瓜分的总金额
@@ -523,6 +523,12 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         require(borrowInfo.stakeAmount > 0, "claimBorrow: 没有索取 jp_token");
         require(!borrowInfo.hasNoClaim,"claimBorrow: 再次索取");
         // 总 jp 数量 = settleAmountLend * martgageRate
+        /*
+        如果抵押率是166%（martgageRate=166000000），借出100个代币
+        JP代币数量 = 100 × 166% = 166个
+        借款人收到166个JP代币，代表他的债务凭证
+        个人理解，这里是mul(pool.martgageRate)还div(pool.martgageRate)，只影响JP代币数量，对最终的结果没什么影响，目的是为了确认份额而已。
+        */
         uint256 totalJpAmount = data.settleAmountLend.mul(pool.martgageRate).div(baseDecimal);
         uint256 userShare = borrowInfo.stakeAmount.mul(calDecimal).div(pool.borrowSupply);
         uint256 jpAmount = totalJpAmount.mul(userShare).div(calDecimal);
@@ -648,9 +654,9 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
             // 当前的质押物（以借出币计价），在满足质押率要求的前提下，最高能支撑多少债务。
             /*
             逻辑推导：
-            假设质押率 martgageRate = 60%（即 0.6）。
+            假设质押率 martgageRate = 166%（即 1.66）。
             你的质押物总价值 totalValue = 600 USDT。
-            actualValue = 600 / 0.6 = 1000 USDT。
+            actualValue = 600 / 1.66 = 1000 USDT。
             这个1000的含义是：只要出借人存入的钱（lendSupply）不超过 1000，这笔交易就是安全的；
             如果超过 1000，说明质押物价值不足，出借人的钱已经处于风险中了。
             */
@@ -904,9 +910,14 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         // 贷款金额 = 结算贷款金额 + 利息
         uint256 lendAmount = data.settleAmountLend.add(interest);
         // sellamount = lendAmount*(1+lendFee)
-        // 添加贷款费用
+        // 添加贷款费用,是目标的 token1（lendToken）数量
         uint256 sellAmount = lendAmount.mul(lendFee.add(baseDecimal)).div(baseDecimal);
-        (uint256 amountSell,uint256 amountIn) = _sellExactAmount(swapRouter,token0,token1,sellAmount); // 卖出准确的金额
+        /*
+            sellAmount 是目标的 token1（lendToken）数量
+            amountSell 是实际需要卖出的 token0（borrowToken）数量
+            amountIn 是实际得到的 token1 数量
+        */
+        (uint256 amountSell, uint256 amountIn) = _sellExactAmount(swapRouter,token0,token1,sellAmount); // 卖出准确的金额
         // 可能会有滑点，amountIn - lendAmount < 0;
         if (amountIn > lendAmount) {
             uint256 feeAmount = amountIn.sub(lendAmount) ; // 费用金额
