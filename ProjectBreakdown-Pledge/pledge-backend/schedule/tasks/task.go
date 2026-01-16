@@ -26,8 +26,10 @@ func Task() {
 	services.NewTokenPrice().UpdateContractPrice()   // 处理代币价格相关
 	services.NewTokenSymbol().UpdateContractSymbol() // 管理代币符号
 	services.NewTokenLogo().UpdateTokenLogo()        // 管理代币Logo
-	services.NewBalanceMonitor().Monitor()           // 控余额变化
+	// 监控bnb是否超阈值
+	services.NewBalanceMonitor().Monitor()
 	// services.NewTokenPrice().SavePlgrPrice()
+	// 测试网更新PLGR代币价格
 	services.NewTokenPrice().SavePlgrPriceTestNet() // 处理代币价格相关
 
 	//run pool task

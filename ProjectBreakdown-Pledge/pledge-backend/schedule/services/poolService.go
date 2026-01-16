@@ -43,13 +43,13 @@ func (s *poolService) UpdatePoolInfo(contractAddress, network, chainId string) {
 		return
 	}
 
-	// 初始化合约实例
+	// 初始化合约实例 通过abi 生成的合约获取合约
 	pledgePoolToken, err := bindings.NewPledgePoolToken(common.HexToAddress(contractAddress), ethereumConn)
 	if nil != err {
 		log.Logger.Error(err.Error())
 		return
 	}
-
+	//-----------获取合约信息
 	// 借贷手续费
 	// borrowFee
 	borrowFee, err := pledgePoolToken.PledgePoolTokenCaller.BorrowFee(nil)
@@ -63,11 +63,12 @@ func (s *poolService) UpdatePoolInfo(contractAddress, network, chainId string) {
 		log.Logger.Error(err.Error())
 		return
 	}
-
+	//循环合约上的池子信息
 	for i := 0; i <= int(pLength.Int64())-1; i++ {
 
 		log.Logger.Sugar().Info("UpdatePoolInfo ", i)
 		poolId := utils.IntToString(i + 1)
+		// 根据id获取合约baseinfo
 		// 获取池基础信息，包括抵押率、利率、供应量等
 		baseInfo, err := pledgePoolToken.PledgePoolTokenCaller.PoolBaseInfo(nil, big.NewInt(int64(i)))
 		if err != nil {
@@ -77,13 +78,14 @@ func (s *poolService) UpdatePoolInfo(contractAddress, network, chainId string) {
 		// 获取借贷代币信息 构建JSON数据
 		_, borrowToken := models.NewTokenInfo().GetTokenInfo(baseInfo.BorrowToken.String(), chainId)
 		_, lendToken := models.NewTokenInfo().GetTokenInfo(baseInfo.LendToken.String(), chainId)
-
+		//链上获取lend token
 		lendTokenJson, _ := json.Marshal(models.LendToken{
 			LendFee:    lendFee.String(),
 			TokenLogo:  lendToken.Logo,
 			TokenName:  lendToken.Symbol,
 			TokenPrice: lendToken.Price,
 		})
+		//链上获取borrow token
 		borrowTokenJson, _ := json.Marshal(models.BorrowToken{
 			BorrowFee:  borrowFee.String(),
 			TokenLogo:  borrowToken.Logo,

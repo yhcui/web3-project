@@ -13,6 +13,11 @@ interface IBscPledgeOracle {
       */
     function getPrice(address asset) external view returns (uint256);
     /*
+
+     推测底层资产为BNB，因为这个BSC链的预言机
+      比如 Chainlink，所以这里返回的是BNB的USD价格。
+
+      getUnderlyingPrice 方法返回的是**底层资产（Underlying Asset）**的价格。
       通常用于借贷协议（如 Venus 或 Compound 的衍生协议）
       cToken (uint256) — 借贷凭证代币的标识或地址（注意这里用了 uint256，在某些架构中可能是索引 ID）
       它不是查询凭证代币本身的价格，而是查询该凭证对应的**底层资产（Underlying Asset）**的价格。

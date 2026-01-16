@@ -110,7 +110,7 @@ func (p *PoolBase) SaveTokenInfo(base *PoolBase) (error, []string) {
 	tokenSymbol := []string{"", ""}
 	nowDateTime := utils.GetCurDateTimeFormat()
 
-	// borrowToken
+	// borrowToken 如果数据库中已有对应记录，First 操作会成功返回
 	err := db.Mysql.Table("token_info").Where("chain_id=? and token=?", base.ChainId, base.BorrowToken).First(&tokenInfo).Debug().Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
