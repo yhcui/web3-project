@@ -523,6 +523,12 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         require(borrowInfo.stakeAmount > 0, "claimBorrow: 没有索取 jp_token");
         require(!borrowInfo.hasNoClaim,"claimBorrow: 再次索取");
         // 总 jp 数量 = settleAmountLend * martgageRate
+        /*
+        如果抵押率是166%（martgageRate=166000000），借出100个代币
+        JP代币数量 = 100 × 166% = 166个
+        借款人收到166个JP代币，代表他的债务凭证
+        个人理解，这里是mul(pool.martgageRate)还div(pool.martgageRate)，只影响JP代币数量，对最终的结果没什么影响，目的是为了确认份额而已。
+        */
         uint256 totalJpAmount = data.settleAmountLend.mul(pool.martgageRate).div(baseDecimal);
         uint256 userShare = borrowInfo.stakeAmount.mul(calDecimal).div(pool.borrowSupply);
         uint256 jpAmount = totalJpAmount.mul(userShare).div(calDecimal);
