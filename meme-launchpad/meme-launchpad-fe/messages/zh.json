@@ -1,0 +1,773 @@
+{
+  "home": {
+    "hello": "你好"
+  },
+  "wallet": {
+    "title": "连接钱包",
+    "description": "连接您的钱包到BNB链",
+    "wrongNetwork": "网络错误",
+    "switchNetwork": "切换网络",
+    "disconnect": "断开连接",
+    "copyAddress": "复制地址",
+    "viewOnExplorer": "在浏览器查看",
+    "connected": "已连接",
+    "connecting": "连接中...",
+    "personalPage": "个人主页",
+    "rebate": "返佣",
+    "assetRecommendation": "资产推荐",
+    "noData": "暂无数据"
+  },
+  "header": {
+    "nav": {
+      "board": "看板",
+      "ranking": "排行榜",
+      "advancedEarn": "进阶赚取",
+      "events": "活动"
+    },
+    "actions": {
+      "search": "搜索",
+      "language": "语言",
+      "createCoin": "创建代币"
+    }
+  },
+  "trending": {
+    "title": "热门趋势",
+    "viewAll": "查看全部"
+  },
+  "launch": {
+    "title": "即时发射",
+    "tabs": {
+      "all": "全部",
+      "ido": "IDO",
+      "upcoming": "即将推出",
+      "launched": "已发射",
+      "burning": "燃烧中",
+      "presale": "预售",
+      "normal": "常规"
+    },
+    "sort": {
+      "label": "排序",
+      "newest": "最新",
+      "oldest": "最旧",
+      "popular": "最受欢迎",
+      "volume": "最高交易量",
+      "tradingVolume": "交易量",
+      "holders": "持有人",
+      "marketCap": "市值",
+      "raised": "已筹集",
+      "hot": "热门"
+    },
+    "time": {
+      "5min": "5分钟",
+      "30min": "30分钟",
+      "1h": "1小时",
+      "4h": "4小时",
+      "24h": "24小时",
+      "1d": "1天",
+      "3d": "3天",
+      "7d": "7天",
+      "30d": "30天",
+      "1y": "1年"
+    }
+  },
+  "trendingTokens": {
+    "title": "热门代币",
+    "favorite": "添加到收藏",
+    "unfavorite": "取消收藏",
+    "limit": "限购",
+    "openSale": "开放销售"
+  },
+  "common": {
+    "pagination": {
+      "previous": "上一页",
+      "next": "下一页",
+      "goToPage": "前往第{{page}}页"
+    },
+    "connectWallet": "连接钱包",
+    "signMessage": "签名消息",
+    "cancel": "取消",
+    "copySuccess": "复制成功"
+  },
+  "footer": {
+    "description": "BNB链上领先的Web3平台，用于发布和交易创新代币。",
+    "copyright": "© {year} MetaLand. 保留所有权利。",
+    "info": {
+      "title": "信息",
+      "privacy": "隐私政策",
+      "terms": "使用条款"
+    },
+    "products": {
+      "title": "产品",
+      "launchpad": "发射台",
+      "staking": "质押",
+      "claim": "领取",
+      "apply": "申请成为项目"
+    },
+    "support": {
+      "title": "支持",
+      "docs": "文档",
+      "mediaKit": "媒体资料包",
+      "contact": "联系我们",
+      "faq": "常见问题"
+    }
+  },
+  "ranking": {
+    "title": {
+      "overview": "概览",
+      "tradingData": "交易数据",
+      "ranking": "排行榜"
+    },
+    "tabs": {
+      "favorite": "收藏",
+      "crypto": "加密货币",
+      "new": "新币"
+    },
+    "tags": {
+      "all": "全部",
+      "ai": "AI",
+      "meme": "Meme",
+      "defi": "DeFi",
+      "games": "游戏",
+      "infra": "基础设施",
+      "deSci": "去中心化科学",
+      "social": "社交",
+      "depin": "DePIN",
+      "charity": "慈善",
+      "others": "其他"
+    },
+    "sort": {
+      "name": "名称",
+      "hot": "热度",
+      "price": "价格",
+      "change24h": "24h涨跌",
+      "volume24h": "24h交易量",
+      "marketCap": "市值",
+      "txCount": "交易笔数",
+      "holders": "持币人数",
+      "top10": "TOP10",
+      "age": "币龄",
+      "progress": "进度"
+    },
+    "overview": {
+      "hot": "热度",
+      "new": "新币",
+      "topGainers": "涨幅",
+      "topLosers": "跌幅",
+      "topVolume": "交易量",
+      "topMarketCap": "市值",
+      "hotCoin": "热门币种"
+    }
+  },
+  "advancedEarn": {
+    "tokenTypes": {
+      "latestLaunched": "最新上线",
+      "aboutToLaunch": "即将上线",
+      "aboutToFill": "即将打满",
+      "hot": "热度",
+      "tradingVolume": "交易量",
+      "marketCap": "市值",
+      "holders": "持币人数",
+      "transactions": "交易笔数",
+      "graduated": "已经毕业"
+    }
+  },
+  "createToken": {
+    "upload": {
+      "clickToUpload": "点击上传",
+      "orDragAndDrop": "或拖拽文件到此处",
+      "uploading": "上传中...",
+      "tokenLogo": {
+        "supportedFormats": "支持格式：JPEG、PNG、GIF",
+        "maxSize": "最大大小：5MB",
+        "minDimensions": "最小尺寸：512x512px",
+        "squareRecommend": "推荐 1:1 正方形"
+      },
+      "banner": {
+        "supportedFormats": "支持格式：JPEG、PNG",
+        "maxSize": "最大大小：5MB",
+        "minDimensions": "最小尺寸：750x250px",
+        "aspectRatio": "3:1 宽高比"
+      }
+    },
+    "crop": {
+      "title": "上传图片",
+      "bannerTitle": "上传横幅图片",
+      "ratio": "比例",
+      "bannerRatio": "比例",
+      "upload": "上传",
+      "processing": "处理中..."
+    },
+    "form": {
+      "symbol": "符号",
+      "coinName": "代币名称",
+      "description": "描述",
+      "banner": "横幅",
+      "tag": "标签",
+      "optional": "(可选)",
+      "required": "*",
+      "selectUpTo3": "最多选择3个",
+      "socialPlatform": "社交平台",
+      "essentialInfo": "基本信息​"
+    },
+    "tabs": {
+      "newCoin": "新代币",
+      "ido": "IDO",
+      "burning": "销毁"
+    },
+    "preview": {
+      "title": "创建预览",
+      "hide": "隐藏",
+      "show": "显示",
+      "clickToPreview": "点击预览",
+      "enterNameAndSymbol": "请输入代币名称和符号",
+      "calculationFailed": "地址计算失败"
+    },
+    "ido": {
+      "settings": "IDO 设置",
+      "price": "IDO 价格",
+      "supply": "代币供应量",
+      "startDate": "开始日期",
+      "endDate": "结束日期",
+      "minPurchase": "最小购买量",
+      "maxPurchase": "最大购买量",
+      "description": "设置您的首次去中心化交易所发行参数"
+    },
+    "burning": {
+      "settings": "销毁设置",
+      "rate": "销毁率",
+      "schedule": "销毁计划",
+      "hourly": "每小时",
+      "daily": "每日",
+      "weekly": "每周",
+      "monthly": "每月",
+      "totalAmount": "总销毁量",
+      "autoBurn": "自动销毁",
+      "description": "配置代币销毁机制以逐渐减少供应量"
+    },
+    "placeholders": {
+      "symbol": "添加代币符号（例如 DOGE）",
+      "coinName": "为您的代币命名",
+      "description": "输入代币描述。\n例如：这是一个关于悲伤青蛙的故事。",
+      "twitter": "https://x.com/用户名",
+      "discord": "https://discord.gg/邀请码",
+      "telegram": "https://t.me/用户名",
+      "website": "https://您的网站",
+      "whitepaper": "https://您的白皮书"
+    },
+    "tags": {
+      "ai": "AI",
+      "meme": "Meme",
+      "defi": "DeFi",
+      "games": "游戏",
+      "infra": "基础设施",
+      "deSci": "去中心化科学",
+      "social": "社交",
+      "depin": "DePIN",
+      "charity": "慈善",
+      "others": "其他"
+    },
+    "preBuy": {
+      "title": "预购",
+      "description": "在发行期间使用 BNB 购买您代币供应量的最多 99.9%",
+      "cost": "预购成本：",
+      "tokenUtilityExplanation": "代币效用说明",
+      "overallProgress": "总进度",
+      "left": "剩余",
+      "normal": "常规",
+      "locked": "锁仓",
+      "namePlaceholder": "分配名称",
+      "descriptionPlaceholder": "描述此代币分配的用途",
+      "percentageError": "总百分比不能超过100%"
+    },
+    "margin": {
+      "time": "时间",
+      "amountPlaceholder": "请输入",
+      "timePlaceholder": "请输入"
+    },
+    "reservation": {
+      "selectDateTime": "选择日期和时间"
+    },
+    "contact": {
+      "telegram": "Telegram",
+      "email": "邮箱",
+      "telegramPlaceholder": "@用户名 或 https://t.me/用户名",
+      "emailPlaceholder": "contact@example.com"
+    },
+    "settings": {
+      "addMargin": "添加保证金",
+      "addMarginTooltip": "添加额外的BNB以增加流动性并稳定代币发行时的价格。保证金将在指定时间内锁定。",
+      "tokenLaunchReservation": "代币发行预留",
+      "tokenLaunchReservationTooltip": "为您的代币发行设定具体的日期和时间。代币将在预定时间自动发行。",
+      "officialContact": "官方联系方式",
+      "officialContactTooltip": "提供官方联系信息，让代币创建者可以直接联系您。此信息将公开显示。",
+      "contractPreview": "​合约预览​",
+      "last4RandomDigits": "最后4位随机数字",
+      "customizeLast4Digits": "自定义最后4位数字",
+      "clickToPreview": "点击预览",
+      "digitsPlaceholder": "123a",
+      "digitsHint": "*允许: 0-9, a-f (不区分大小写)",
+      "digitsError": "请输入4位十六进制数字"
+    },
+    "button": {
+      "letsRoll": "开始创建",
+      "launchIDO": "启动 IDO 🚀",
+      "startBurning": "开始销毁 🔥"
+    },
+    "errors": {
+      "symbolRequired": "符号是必填项",
+      "symbolMaxLength": "符号必须少于或等于10个字符",
+      "coinNameRequired": "代币名称是必填项",
+      "coinNameMaxLength": "代币名称必须少于或等于50个字符",
+      "maxTags": "最多只能选择3个标签",
+      "fileSize": "文件大小超出限制",
+      "fileType": "无效的文件类型。请使用 {types}",
+      "uploadFailed": "文件上传失败，请重试",
+      "missingLogo": "需要代币Logo",
+      "uploadLogoFirst": "请先上传代币Logo再创建",
+      "invalidImage": "无效的图像文件。请检查要求",
+      "transactionFailed": "交易失败",
+      "transactionReverted": "交易在链上被撤销。请重试。",
+      "transactionStatusUnknown": "交易状态未知",
+      "checkExplorer": "无法确认交易状态。请查看区块浏览器。",
+      "transactionCancelled": "交易已取消",
+      "userCancelled": "您在钱包中取消了交易",
+      "creationFailed": "创建失败",
+      "unexpected": "发生了意外错误"
+    },
+    "contractCall": {
+      "title": "合约交易",
+      "message": "请在钱包中确认交易",
+      "estimatingGas": "正在估算Gas费用...",
+      "confirmTransaction": "在钱包中确认交易",
+      "waitingForConfirmation": "等待交易确认...",
+      "transactionSubmitted": "交易已提交"
+    },
+    "success": {
+      "title": "代币创建成功！",
+      "message": "您的代币已创建",
+      "viewOnExplorer": "在区块浏览器查看",
+      "creating": "正在创建您的代币...",
+      "redirecting": "正在跳转到代币页面...",
+      "congratulations": "恭喜你创建成功！",
+      "contractAddress": "合约地址：",
+      "share": "分享",
+      "viewHomepage": "主页查看",
+      "shareText": "我刚刚创建了一个新代币！合约地址：{address}"
+    },
+    "auth": {
+      "required": "需要认证",
+      "connectWalletToUpload": "请连接钱包并签名以上传图片",
+      "failed": "认证失败",
+      "failedMessage": "认证失败，请重试",
+      "success": "认证成功",
+      "successMessage": "您现在可以上传图片了",
+      "signatureRequired": "需要签名",
+      "signatureDescription": "为了上传图片和创建代币，您需要签署一条消息来验证钱包所有权。这是为了安全目的。",
+      "walletAddress": "钱包地址",
+      "signatureInfo": "此签名请求不会触发任何区块链交易，也不会消耗任何 gas 费用。",
+      "signMessage": "签署消息",
+      "signing": "签名中..."
+    }
+  },
+  "TokenPage": {
+    "change24h": "24h涨跌",
+    "marketCap": "市值(USDT)",
+    "liquidity": "流动性",
+    "volume24h": "24h交易量(USDT)",
+    "holders": "持币人数量",
+    "top10": "TOP10",
+    "transactions24h": "24h交易笔数",
+    "turnoverRate": "换手率",
+    "heatValue": "热度值",
+    "margin": "保证金(USDT)",
+    "tags": "标签",
+    "copyAddress": "复制地址",
+    "share": "分享",
+    "favorite": "收藏",
+    "unfavorite": "取消收藏",
+    "twitter": "推特",
+    "website": "官网",
+    "telegram": "电报",
+    "discord": "Discord",
+    "document": "文档",
+    "Settings": {
+      "title": "设置",
+      "klineColors": "K线颜色",
+      "klineColorsDesc": "选择您偏好的价格图表颜色方案",
+      "greenUpRedDown": "绿涨红跌",
+      "redUpGreenDown": "红涨绿跌",
+      "rise": "上涨",
+      "fall": "下跌",
+      "marketPanel": "市场面板",
+      "marketPanelDesc": "切换市场信息面板的显示和隐藏",
+      "showMarketPanel": "显示市场面板",
+      "panelVisible": "面板已显示",
+      "panelHidden": "面板已隐藏",
+      "resetToDefaults": "重置为默认设置"
+    },
+    "chainBSC": "BSC链",
+    "selectToken": "选择代币",
+    "burning": "燃烧中",
+    "search": "搜索",
+    "favorites": "自选",
+    "popular": "热门",
+    "readyToLaunch": "准备上线",
+    "newCoins": "新币",
+    "nearlyFull": "即将打满",
+    "graduatingToday": "今日毕业"
+  },
+  "Token": {
+    "title": "代币详情",
+    "contractAddress": "合约地址",
+    "TrendingTicker": {
+      "title": "热门代币"
+    },
+    "LeftPanel": {
+      "searchPlaceholder": "搜索",
+      "tabs": {
+        "popular": "热门",
+        "ready": "准备上线",
+        "new": "新币",
+        "almost": "即将打满",
+        "graduated": "今日毕业",
+        "favorite": "自选"
+      },
+      "marketTabs": {
+        "market": "市场",
+        "anomaly": "市场异动"
+      },
+      "headers": {
+        "name": "NAME",
+        "price": "Price/Δ%",
+        "mcv": "MC/V"
+      }
+    },
+    "RightPanel": {
+      "buy": "买入",
+      "sell": "卖出",
+      "amount": "金额",
+      "enterAmount": "0.00",
+      "available": "可用",
+      "expectedReceive": "预计获得",
+      "minReceived": "最低获得",
+      "mevProtection": "MEV 保护",
+      "slippage": "滑点",
+      "custom": "自定义",
+      "buyButton": "买入{token}",
+      "sellButton": "卖出{token}",
+      "approveButton": "授权{token}",
+      "connectWallet": "连接钱包",
+      "pleaseConnectWalletToTrade": "请连接钱包以开始交易",
+      "preparing": "准备中...",
+      "confirmInWallet": "请在钱包中确认",
+      "processing": "处理中...",
+      "approving": "授权中...",
+      "transactionSuccess": "交易成功",
+      "transactionFailed": "交易失败",
+      "buySuccess": "成功买入价值 {amount} BNB 的 {token}",
+      "sellSuccess": "成功卖出 {amount} {token}",
+      "tryAgain": "请重试",
+      "invalidAmount": "无效金额",
+      "enterValidAmount": "请输入有效金额",
+      "cannotBuy": "无法买入",
+      "cannotSell": "无法卖出",
+      "checkBalanceAndAmount": "请检查您的余额和金额",
+      "approvalRequired": "需要授权",
+      "approvingTokens": "正在授权代币交易...",
+      "approvalSuccess": "授权成功",
+      "approvalSuccessMessage": "代币已授权，现在您可以卖出代币了。",
+      "preparingSell": "正在准备卖出交易...",
+      "waitingForLaunch": "等待上线",
+      "tradingNotAvailable": "暂不可交易",
+      "waitForLaunch": "请等待代币上线",
+      "loadingData": "加载中...",
+      "insufficientBalance": "余额不足",
+      "amountExceedsBalance": "数量超过您的代币余额",
+      "settingToMaxBalance": "设置为您的最大余额",
+      "transactionPending": "交易进行中",
+      "waitForCompletion": "请等待当前交易完成"
+    },
+    "BondingCurve": {
+      "title": "联合曲线进度",
+      "description1": "联合曲线中仍有 {tokensRemaining} token 可供出售，联合曲线中还有 {raised} BNB（募集数量：{target} BNB）。",
+      "description2": "当市值达到 ${marketCapTarget} 时，联合曲线中的所有流动性都将存入 Pancake V3 并销毁。随着价格的上涨，进度也会增加。"
+    },
+    "PeriodicBurning": {
+      "title": "周期燃烧",
+      "totalBurnAmount": "总燃烧金额：",
+      "burnedPercentage": "已经燃烧比例：",
+      "totalBurnPeriod": "总燃烧周期：",
+      "remainingLockPeriod": "锁仓剩余周期：",
+      "burnInterval": "间隔燃烧时间：",
+      "singleBurnPercentage": "单次燃烧比例：",
+      "singleBurnAmount": "单次燃烧金额：",
+      "days": "{count} 天",
+      "minutes": "{count} 分钟"
+    },
+    "CreatorInfo": {
+      "heat": "加热",
+      "share": "分享",
+      "introPrefix": "简介：",
+      "defaultDescription": "流水的夏普率，铁打的财神爷。左侧马丁的夏普率没有意义，短期颅内高潮是假象，短期颅内高潮是假象，夏榜打的财神爷。左侧马丁的夏普率没有意义的...",
+      "viewMore": "查看更多"
+    },
+    "HoldersInfo": {
+      "totalSupply": "供应总量：",
+      "holders": "持有者",
+      "top10": "TOP10 {percentage}%",
+      "percentage": "百分比"
+    },
+    "CenterPanel": {
+      "tabs": {
+        "priceChart": "价格图表",
+        "tokenInfo": "币种信息",
+        "tradingData": "交易数据",
+        "airdropTasks": "空投任务",
+        "fundVoting": "资金申请投票"
+      },
+      "chartTypes": {
+        "basic": "基本版",
+        "tradingView": "Trading View"
+      },
+      "intervals": {
+        "time": "分时",
+        "oneSecond": "1秒",
+        "fifteenMinutes": "15分钟",
+        "oneHour": "1小时",
+        "fourHours": "4小时",
+        "oneDay": "1天",
+        "oneWeek": "周线"
+      },
+      "ohlc": {
+        "open": "开",
+        "high": "高",
+        "low": "低",
+        "close": "收",
+        "change": "涨跌幅",
+        "amplitude": "振幅"
+      },
+      "more": "更多",
+      "joinNow": "立即参与",
+      "willOpenAfterCountdown": "将于倒计时结束后开放"
+    },
+    "TransactionList": {
+      "tabs": {
+        "transactions": "交易",
+        "chatRoom": "聊天室"
+      },
+      "headers": {
+        "date": "日期",
+        "fundraisingProgress": "募资进度",
+        "direction": "方向",
+        "valueUsdt": "价值U",
+        "account": "账户"
+      },
+      "buy": "买入",
+      "sell": "卖出",
+      "fundraisingComplete": "募资已完成",
+      "chatComingSoon": "聊天室即将推出...",
+      "filter": {
+        "rock": "石头",
+        "crystal": "矿石",
+        "gem": "宝石",
+        "diamond": "钻石",
+        "crown": "皇冠"
+      },
+      "noTransactions": "暂无交易记录",
+      "transactionsWillAppearHere": "交易开始后，交易记录将显示在这里"
+    },
+    "ChatRoom": {
+      "inputPlaceholder": "请输入参与聊天",
+      "sendButton": "发送",
+      "loading": "正在加载消息...",
+      "noMessages": "暂无消息",
+      "beFirstToChat": "成为第一个开始对话的人！"
+    },
+    "TokenInfo": {
+      "rank": "排行",
+      "marketCap": "市值",
+      "circulatingSupply": "流通供应量",
+      "launchDate": "发布时间",
+      "fullyDilutedMarketCap": "全流通市值",
+      "totalSupply": "总供应量",
+      "marketCapFDVRatio": "市值/全流通市值",
+      "idoAmount": "I DO 募集金额",
+      "idoDate": "I DO 募集时间",
+      "withdrawalAddresses": "提币地址数量",
+      "contractAddress": "合约地址",
+      "moreInfo": "更多信息",
+      "website": "网站",
+      "blockchainExplorer": "区块链浏览器",
+      "socialMedia": "社交媒体",
+      "tokenDistribution": "首次购买代币去向分布",
+      "liquidityPool": "流动池",
+      "communityBuilding": "社区建设",
+      "airdrop": "空投",
+      "teamFirstReward": "团队第一期奖励",
+      "other": "其他",
+      "defaultDescription": "是一种meme币",
+      "units": {
+        "yi": "亿",
+        "wan": "万"
+      },
+      "disclaimer": "*币种信息来自第三方行情网站，我们无法保证其准确及时性，数据仅供参考，不作为投资依据，请自行查证。"
+    }
+  },
+  "profile": {
+    "pendingUnlockTokens": "待解锁代币",
+    "ownedTokens": "已拥有代币",
+    "createdTokens": "已创建代币",
+    "heatedTokens": "已加热代币",
+    "totalTradeBnb": "总交易额度",
+    "claim": "领取",
+    "apply": "申请",
+    "tabs": {
+      "ido": "IDO代币",
+      "created": "已创建代币",
+      "owned": "已拥有代币",
+      "followed": "已关注代币",
+      "activities": "参与活动",
+      "createdActivities": "已创建活动",
+      "following": "关注用户",
+      "followers": "关注者"
+    },
+    "tableSort": {
+      "name": "名称",
+      "hot": "热力值",
+      "projectFundApplication": "项目资金申请",
+      "projectActivityApplication": "项目活动申请",
+      "more": "更多",
+      "ido": {
+        "totalLocked": "总锁仓代币",
+        "totalLockedTime": "总锁仓时间",
+        "myLocked": "当前我的锁仓",
+        "projectLocked": "项目锁仓领取",
+        "remainingLockedTime": "剩余锁仓时间",
+        "claimedTokens": "已领取代币",
+        "progress": "进度",
+        "pendingClaim": "待领取代币",
+        "claimToken": "领取代币"
+      },
+      "created": {
+        "marketCap": "市值",
+        "progress": "进度",
+        "totalLocked": "总锁仓",
+        "myLocked": "我的锁仓",
+        "projectLocked": "项目锁仓领取"
+      },
+      "followed": {
+        "price": "价格",
+        "priceChange24h": "24h涨跌幅",
+        "volume24h": "24h交易量",
+        "marketCap": "市值",
+        "hot": "热力值",
+        "transactions": "交易笔数",
+        "progress": "进度",
+        "totalLocked": "总锁仓代币",
+        "myLocked": "当前我的锁仓",
+        "projectLocked": "项目锁仓领取",
+        "holders": "持币人数",
+        "top10": "TOP10",
+        "age": "年龄"
+      },
+      "owned": {
+        "marketCap": "市值",
+        "transactions": "交易笔数",
+        "progress": "进度",
+        "totalLocked": "总锁仓代币",
+        "myLocked": "我的锁仓",
+        "projectLocked": "项目锁仓领取",
+        "holders": "持币人数",
+        "top10": "TOP10",
+        "age": "年龄"
+      },
+      "activities": {
+        "activityName": "活动名称",
+        "activityAddress": "活动地址",
+        "createdAt": "创建时间",
+        "activityType": "活动类型",
+        "activityTime": "活动时间",
+        "totalAmount": "奖池总额",
+        "status": "活动状态",
+        "joinedProgress": "参与进度",
+        "rewardStatus": "奖励状态"
+      }
+    },
+    "actions": {
+      "createCoin": "创建代币",
+      "createActivity": "创建活动",
+      "apply": "申请",
+      "claim": "领取"
+    },
+    "dialog": {
+      "confirmClaim": "确认领取",
+      "confirmClaimMessage": "确认转入当前钱包地址：",
+      "confirmClaimButton": "立即领取",
+      "createActivity": "创建活动",
+      "createActivityAboutCA": "需要参与活动的项目：",
+      "createActivityInput": "请输入 CA",
+      "createActivityButton": "创建活动",
+      "fundingApply": "项目资金提案申请",
+      "fundingApplyCreate": "创建提案",
+      "fundingApplyTabs": {
+        "new": "资金最新情况",
+        "applying": "申请中",
+        "finished": "已结束"
+      }
+    },
+    "createEvent": {
+      "title": "创建活动",
+      "name": "活动名称",
+      "namePlaceholder": "请输入活动名称",
+      "description": "活动描述",
+      "descriptionPlaceholder": "请输入活动描述",
+      "coverImage": "活动封面",
+      "categoryType": "活动类型",
+      "categoryTypePlaceholder": "请选择活动类型",
+      "categoryTypeOptions": {
+        "airdrop": "空投活动",
+        "upcoming": "即将发射"
+      },
+      "playType": "活动玩法",
+      "playTypePlaceholder": "请选择活动玩法",
+      "playTypeOptions": {
+        "trade": "交易量",
+        "invite": "邀请用户交易代币",
+        "heatVote": "热度投票",
+        "comment": "评论"
+      },
+      "rewardTokenType": "空投代币选择",
+      "rewardTokenTypePlaceholder": "请选择空投代币",
+      "rewardAmount": "空投总量",
+      "rewardAmountPlaceholder": "请输入空投总量",
+      "rewardSlots": "份数",
+      "rewardSlotsPlaceholder": "请输入份数",
+      "rewardTokenSymbol": "每份价值代币",
+      "rewardTokenSymbolPlaceholder": "请输入每份价值代币",
+      "minDailyTradeAmount": "单个用户每日基础交易量标准：",
+      "inviteMinCount": "邀请",
+      "inviteMinCountPlaceholder": "请输入邀请数量",
+      "inviteeMinTradeAmount": "用户交易代币",
+      "inviteeMinTradeAmountPlaceholder": "请输入用户交易代币金额",
+      "inviteeMinTradeAmountUnit": "金额高于",
+      "heatVoteTarget": "单个用户投",
+      "heatVoteTargetPlaceholder": "请输入单个用户投",
+      "heatVoteTargetUnit": "票",
+      "heatVoteTargetValue": "可获得：",
+      "commentMinCount": "单个用户评论",
+      "commentMinCountPlaceholder": "请输入单个用户评论数量",
+      "commentMinCountUnit": "条",
+      "commentMinCountValue": "可获得：",
+      "time": "时间",
+      "timeStartPlaceholder": "请选择开始时间",
+      "timeStartTo": "至",
+      "timeEndPlaceholder": "请选择结束时间",
+      "createActivity": "创建活动",
+      "sideBar": {
+        "title": "更多热门活动申请",
+        "contact": "联系我们",
+        "email": "官方邮箱：support@metaland.io"
+      }
+    }
+  }
+}

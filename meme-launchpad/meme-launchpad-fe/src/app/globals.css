@@ -1,0 +1,528 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --text-xl2: 1.375rem;
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+  --container-lg: 62rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  button {
+    cursor: pointer;
+  }
+  html {
+    overscroll-behavior: none;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-din-pro), sans-serif !important;
+    overscroll-behavior: none;
+    position: relative;
+    min-height: 100vh;
+  }
+  /* Prevent overscroll on iOS */
+  body::before,
+  body::after {
+    content: '';
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-color: var(--background);
+    z-index: -1;
+  }
+  body::before {
+    top: -100%;
+  }
+  body::after {
+    bottom: -100%;
+  }
+  input,
+  textarea {
+    @apply caret-[#BEFA0A];
+  }
+  /* Hide number input spinners */
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+}
+
+/* Custom Font */
+@font-face {
+  font-family: 'DIN Pro';
+  src: url('/fonts/dinpro.otf') format('otf');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DIN Pro';
+  src: url('/fonts/dinpro_bold.otf') format('otf');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-din-pro {
+  font-family: var(--font-din-pro), var(--font-sans), sans-serif;
+}
+
+/* Custom Wallet Button Styles */
+.custom-wallet-button [data-testid='rk-connect-button'] {
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #2b3139;
+  background: transparent;
+  padding: 8px;
+  gap: 8px;
+  color: #f0f1f5;
+  font-family: 'DIN Pro', var(--font-sans), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.custom-wallet-button [data-testid='rk-account-button'] {
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid #2b3139;
+  background: transparent;
+  padding: 8px;
+  gap: 8px;
+  color: #f0f1f5;
+  font-family: 'DIN Pro', var(--font-sans), sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.custom-wallet-button [data-testid='rk-chain-button'] {
+  background: #f0b90b;
+  border-radius: 30px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+}
+
+/* Dropdown Menu Custom Styles */
+[data-radix-popper-content-wrapper] {
+  z-index: 100;
+}
+
+/* Date Picker Dark Theme Styles */
+/* Calendar component dark theme */
+.rdp-root {
+  --rdp-accent-color: #fbd537 !important;
+  --rdp-background-color: #1b1e25 !important;
+}
+
+/* Calendar container */
+[data-slot='calendar'] {
+  background-color: #1b1e25 !important;
+}
+
+/* Month/Year header */
+.rdp-caption_label {
+  color: #f0f1f5 !important;
+  font-weight: 600;
+}
+
+/* Weekday labels */
+.rdp-weekday {
+  color: #656a79 !important;
+  font-weight: 400;
+}
+
+/* Day buttons */
+.rdp-day button {
+  color: #f0f1f5;
+  background: transparent;
+  border: none;
+  transition: all 0.2s;
+}
+
+.rdp-day button:hover:not(:disabled):not([data-selected-single='true']) {
+  background: #252832 !important;
+  color: #fbd537 !important;
+}
+
+/* Selected day */
+.rdp-day button[data-selected-single='true'] {
+  background: #fbd537 !important;
+  color: #0a0c0f !important;
+  font-weight: 600;
+}
+
+/* Today indicator */
+.rdp-today:not([data-selected-single='true']) button {
+  background: #252832;
+  color: #f0f1f5;
+  font-weight: 500;
+}
+
+/* Outside month days */
+.rdp-outside button {
+  color: #3f475a !important;
+  opacity: 0.5;
+}
+
+/* Disabled days */
+.rdp-disabled button {
+  color: #3f475a !important;
+  opacity: 0.3;
+}
+
+/* Navigation arrows */
+.rdp-button_previous,
+.rdp-button_next {
+  color: #656a79 !important;
+  background: transparent !important;
+}
+
+.rdp-button_previous:hover,
+.rdp-button_next:hover {
+  background: #252832 !important;
+  color: #f0f1f5 !important;
+}
+
+/* Dropdown selects for month/year */
+.rdp-dropdown {
+  background: #1b1e25 !important;
+  color: #f0f1f5 !important;
+  border: 1px solid #252832 !important;
+}
+
+.rdp-dropdown option {
+  background: #1b1e25 !important;
+  color: #f0f1f5 !important;
+}
+
+/* Image Crop Dialog Slider Styles */
+.slider-custom {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+}
+
+.slider-custom::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: ;
+  cursor: pointer;
+}
+
+.slider-custom::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: ;
+  cursor: pointer;
+  border: none;
+}
+
+/* 隐藏滚动条的类 */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* 自定义滚动条样式 - 全局应用 */
+/* Global custom scrollbar styles */
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3f475a #1b1e25;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1b1e25;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3f475a;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #656a79;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #808593;
+}
+
+/* Corner where horizontal and vertical scrollbars meet */
+::-webkit-scrollbar-corner {
+  background: #1b1e25;
+}
+
+/* Thin scrollbar variant */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #3f475a #1b1e25;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #1b1e25;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #3f475a;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #656a79;
+}
+
+/* Accent scrollbar variant (with yellow theme) */
+.scrollbar-accent {
+  scrollbar-width: thin;
+  scrollbar-color: #fbd53730 #1b1e25;
+}
+
+.scrollbar-accent::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-accent::-webkit-scrollbar-track {
+  background: #1b1e25;
+  border-radius: 4px;
+}
+
+.scrollbar-accent::-webkit-scrollbar-thumb {
+  background: #fbd53730;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.scrollbar-accent::-webkit-scrollbar-thumb:hover {
+  background: #BFFB0650;
+}
+
+.scrollbar-accent::-webkit-scrollbar-thumb:active {
+  background: #BFFB06;
+}
+
+/* Dark scrollbar variant (for lighter backgrounds) */
+.scrollbar-dark {
+  scrollbar-width: thin;
+  scrollbar-color: #252832 #0a0c0f;
+}
+
+.scrollbar-dark::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-dark::-webkit-scrollbar-track {
+  background: #0a0c0f;
+  border-radius: 4px;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background: #252832;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  background: #3f475a;
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb:active {
+  background: #656a79;
+}
+
+/* Overlay scrollbar variant (minimal, appears on hover) */
+.scrollbar-overlay {
+  overflow: overlay;
+}
+
+.scrollbar-overlay::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+}
+
+.scrollbar-overlay::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-overlay::-webkit-scrollbar-thumb {
+  background: rgba(101, 106, 121, 0.3);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.scrollbar-overlay:hover::-webkit-scrollbar-thumb {
+  background: rgba(101, 106, 121, 0.5);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.scrollbar-overlay::-webkit-scrollbar-thumb:hover {
+  background: rgba(101, 106, 121, 0.7);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* macOS-style scrollbar */
+.scrollbar-mac {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 133, 147, 0.5) transparent;
+}
+
+.scrollbar-mac::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+  background: transparent;
+}
+
+.scrollbar-mac::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+
+.scrollbar-mac::-webkit-scrollbar-thumb {
+  background: rgba(128, 133, 147, 0.5);
+  border: 4px solid transparent;
+  border-radius: 10px;
+  background-clip: padding-box;
+  transition: background 0.2s ease;
+}
+
+.scrollbar-mac::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 133, 147, 0.7);
+  border: 4px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Trending Ticker Animation */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 30s linear infinite;
+}
+
+.animate-scroll-left:hover {
+  animation-play-state: paused;
+}
+
+a#tv-attr-logo {
+  display: none !important;
+}

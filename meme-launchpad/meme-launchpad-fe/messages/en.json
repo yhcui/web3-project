@@ -1,0 +1,773 @@
+{
+  "home": {
+    "hello": "Hello"
+  },
+  "wallet": {
+    "title": "Connect Wallet",
+    "description": "Connect your wallet to BNB Chain",
+    "wrongNetwork": "Wrong Network",
+    "switchNetwork": "Switch Network",
+    "disconnect": "Disconnect",
+    "copyAddress": "Copy Address",
+    "viewOnExplorer": "View on Explorer",
+    "connected": "Connected",
+    "connecting": "Connecting...",
+    "personalPage": "Personal Homepage",
+    "rebate": "Rebate",
+    "assetRecommendation": "Asset Recommendation",
+    "noData": "No Data"
+  },
+  "header": {
+    "nav": {
+      "board": "Board",
+      "ranking": "Ranking",
+      "advancedEarn": "Advanced Earn",
+      "events": "Events"
+    },
+    "actions": {
+      "search": "Search",
+      "language": "Language",
+      "createCoin": "Create Coin"
+    }
+  },
+  "trending": {
+    "title": "Trending",
+    "viewAll": "View All"
+  },
+  "launch": {
+    "title": "Launch",
+    "tabs": {
+      "all": "All",
+      "ido": "IDO",
+      "upcoming": "Upcoming",
+      "launched": "Launched",
+      "burning": "Burning",
+      "presale": "Presale",
+      "normal": "Normal"
+    },
+    "sort": {
+      "label": "Sort by",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "popular": "Most Popular",
+      "volume": "Highest Volume",
+      "tradingVolume": "Trading Volume",
+      "holders": "Holders",
+      "marketCap": "Market Cap",
+      "raised": "Fully Raised",
+      "hot": "Hot"
+    },
+    "time": {
+      "5min": "5min",
+      "30min": "30min",
+      "1h": "1h",
+      "4h": "4h",
+      "24h": "24h",
+      "1d": "1d",
+      "3d": "3d",
+      "7d": "7d",
+      "30d": "30d",
+      "1y": "1y"
+    }
+  },
+  "trendingTokens": {
+    "title": "Trending Tokens",
+    "favorite": "Add to favorites",
+    "unfavorite": "Remove from favorites",
+    "limit": "Limit",
+    "openSale": "Open sale"
+  },
+  "common": {
+    "pagination": {
+      "previous": "Previous page",
+      "next": "Next page",
+      "goToPage": "Go to page {{page}}"
+    },
+    "connectWallet": "Connect Wallet",
+    "signMessage": "Sign Message",
+    "cancel": "Cancel",
+    "copySuccess": "Copy successful"
+  },
+  "footer": {
+    "description": "The premier Web3 platform for launching and trading innovative tokens on BNB Chain.",
+    "copyright": "© {year} MetaLand. All rights reserved.",
+    "info": {
+      "title": "Info",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use"
+    },
+    "products": {
+      "title": "Products",
+      "launchpad": "Launchpad",
+      "staking": "Staking",
+      "claim": "Claim",
+      "apply": "Apply as a project"
+    },
+    "support": {
+      "title": "Support",
+      "docs": "Docs",
+      "mediaKit": "Media Kit",
+      "contact": "Contact us",
+      "faq": "FAQ"
+    }
+  },
+  "ranking": {
+    "title": {
+      "overview": "Overview",
+      "tradingData": "Trading Data",
+      "ranking": "Rankings"
+    },
+    "tabs": {
+      "favorite": "Favorites",
+      "crypto": "Cryptos",
+      "new": "New"
+    },
+    "tags": {
+      "all": "All",
+      "ai": "AI",
+      "meme": "Meme",
+      "defi": "DeFi",
+      "games": "Games",
+      "infra": "Infra",
+      "deSci": "De-Sci",
+      "social": "Social",
+      "depin": "Depin",
+      "charity": "Charity",
+      "others": "Others"
+    },
+    "sort": {
+      "name": "Name",
+      "hot": "Hot",
+      "price": "Price",
+      "change24h": "24h Change",
+      "volume24h": "24h Volume",
+      "marketCap": "Market Cap",
+      "txCount": "Transactions",
+      "holders": "Holders",
+      "top10": "TOP10",
+      "age": "Age",
+      "progress": "Progress"
+    },
+    "overview": {
+      "hot": "Hot",
+      "new": "New",
+      "topGainers": "Top Gainers",
+      "topLosers": "Top Losers",
+      "topVolume": "Top Volume",
+      "topMarketCap": "Top Market Cap",
+      "hotCoin": "Hot Coins"
+    }
+  },
+  "advancedEarn": {
+    "tokenTypes": {
+      "latestLaunched": "Latest Launched",
+      "aboutToLaunch": "About to Launch",
+      "aboutToFill": "About to Fill",
+      "hot": "Hot",
+      "tradingVolume": "Trading Volume",
+      "marketCap": "Market Cap",
+      "holders": "Holders",
+      "transactions": "Transactions",
+      "graduated": "Graduated"
+    }
+  },
+  "createToken": {
+    "upload": {
+      "clickToUpload": "Click to upload",
+      "orDragAndDrop": "or drag and drop",
+      "uploading": "Uploading...",
+      "tokenLogo": {
+        "supportedFormats": "Supported formats: JPEG, PNG, GIF",
+        "maxSize": "Max Size: 5MB",
+        "minDimensions": "Min dimensions: 512x512px",
+        "squareRecommend": "1:1 square recommend"
+      },
+      "banner": {
+        "supportedFormats": "Supported formats: JPEG, PNG",
+        "maxSize": "Max Size: 5MB",
+        "minDimensions": "Min dimensions: 750x250px",
+        "aspectRatio": "3:1 aspect ratio"
+      }
+    },
+    "crop": {
+      "title": "Upload Image",
+      "bannerTitle": "Upload Banner Image",
+      "ratio": "Ratio",
+      "bannerRatio": "Ratio",
+      "upload": "Upload",
+      "processing": "Processing..."
+    },
+    "form": {
+      "symbol": "Symbol",
+      "coinName": "Coin Name",
+      "description": "Description",
+      "banner": "Banner",
+      "tag": "Tag",
+      "optional": "(optional)",
+      "required": "*",
+      "selectUpTo3": "Select up to 3",
+      "socialPlatform": "Social Platform",
+      "essentialInfo": "Essential Info​"
+    },
+    "tabs": {
+      "newCoin": "New Coin",
+      "ido": "IDO",
+      "burning": "Burning"
+    },
+    "preview": {
+      "title": "Create Preview",
+      "hide": "Hide",
+      "show": "Show",
+      "clickToPreview": "Click to Preview",
+      "enterNameAndSymbol": "Please enter token name and symbol",
+      "calculationFailed": "Failed to calculate address"
+    },
+    "ido": {
+      "settings": "IDO Settings",
+      "price": "IDO Price",
+      "supply": "Token Supply",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "minPurchase": "Min Purchase",
+      "maxPurchase": "Max Purchase",
+      "description": "Set up your Initial DEX Offering parameters"
+    },
+    "burning": {
+      "settings": "Burning Settings",
+      "rate": "Burn Rate",
+      "schedule": "Burn Schedule",
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "totalAmount": "Total Burn Amount",
+      "autoBurn": "Auto Burn",
+      "description": "Configure token burning mechanism to reduce supply over time"
+    },
+    "placeholders": {
+      "symbol": "Add a coin ticker (e.g. DOGE)",
+      "coinName": "Name your coin",
+      "description": "Enter a description about the coin.\ne.g. This is a story about a sad frog.",
+      "twitter": "https://x.com/username",
+      "discord": "https://discord.gg/invitecode",
+      "telegram": "https://t.me/username",
+      "website": "https://your.site",
+      "whitepaper": "https://your.Whitepaper"
+    },
+    "tags": {
+      "ai": "AI",
+      "meme": "Meme",
+      "defi": "DeFi",
+      "games": "Games",
+      "infra": "Infra",
+      "deSci": "De-Sci",
+      "social": "Social",
+      "depin": "Depin",
+      "charity": "Charity",
+      "others": "Others"
+    },
+    "preBuy": {
+      "title": "Pre-Buy",
+      "description": "Buy up to 99.9% of your token's supply with BNB during launch",
+      "cost": "Pre-buy cost:",
+      "tokenUtilityExplanation": "Token Utility Explanation",
+      "overallProgress": "Overall Progress",
+      "left": "Left",
+      "normal": "Normal",
+      "locked": "Locked",
+      "namePlaceholder": "Allocation name",
+      "descriptionPlaceholder": "Describe this token allocation purpose",
+      "percentageError": "Total percentage cannot exceed 100%"
+    },
+    "margin": {
+      "time": "Time",
+      "amountPlaceholder": "Please Enter",
+      "timePlaceholder": "Please Enter"
+    },
+    "reservation": {
+      "selectDateTime": "Select Date & Time"
+    },
+    "contact": {
+      "telegram": "Telegram",
+      "email": "Email",
+      "telegramPlaceholder": "@username or https://t.me/username",
+      "emailPlaceholder": "contact@example.com"
+    },
+    "settings": {
+      "addMargin": "Add Margin",
+      "addMarginTooltip": "Add additional BNB to increase liquidity and stabilize the token price at launch. The margin will be locked for the specified duration.",
+      "tokenLaunchReservation": "Token Launch Reservation",
+      "tokenLaunchReservationTooltip": "Schedule your token launch for a specific date and time. The token will be automatically launched at the scheduled time.",
+      "officialContact": "Official Contact",
+      "officialContactTooltip": "Provide official contact information for token creators to reach you directly. This information will be publicly visible.",
+      "contractPreview": "​Contract Preview​",
+      "last4RandomDigits": "Last 4 Random Digits",
+      "customizeLast4Digits": "Customize last 4 digits",
+      "clickToPreview": "Click to Preview",
+      "digitsPlaceholder": "123a",
+      "digitsHint": "*Allowed: 0-9, a-f (case insensitive)",
+      "digitsError": "Please enter exactly 4 hexadecimal digits"
+    },
+    "button": {
+      "letsRoll": "Let's roll",
+      "launchIDO": "Launch IDO",
+      "startBurning": "Start Burning"
+    },
+    "errors": {
+      "fileSize": "File size must be less than 5MB",
+      "fileType": "File must be {{types}}",
+      "symbolRequired": "Symbol is required",
+      "symbolMaxLength": "Symbol must be 10 characters or less",
+      "coinNameRequired": "Coin name is required",
+      "coinNameMaxLength": "Coin name must be 50 characters or less",
+      "maxTags": "You can select up to 3 tags",
+      "uploadFailed": "Failed to upload file. Please try again",
+      "missingLogo": "Token Logo Required",
+      "uploadLogoFirst": "Please upload a token logo before creating",
+      "invalidImage": "Invalid image file. Please check the requirements",
+      "transactionFailed": "Transaction Failed",
+      "transactionReverted": "The transaction was reverted on-chain. Please try again.",
+      "transactionStatusUnknown": "Transaction Status Unknown",
+      "checkExplorer": "Unable to confirm transaction status. Please check the explorer.",
+      "transactionCancelled": "Transaction Cancelled",
+      "userCancelled": "You cancelled the transaction in your wallet",
+      "creationFailed": "Creation Failed",
+      "unexpected": "An unexpected error occurred"
+    },
+    "contractCall": {
+      "title": "Contract Transaction",
+      "message": "Please confirm the transaction in your wallet",
+      "estimatingGas": "Estimating gas...",
+      "confirmTransaction": "Confirm transaction in wallet",
+      "waitingForConfirmation": "Waiting for transaction confirmation...",
+      "transactionSubmitted": "Transaction submitted"
+    },
+    "success": {
+      "title": "Token Created Successfully!",
+      "message": "Your token has been created!",
+      "viewOnExplorer": "View on Explorer",
+      "creating": "Creating your token...",
+      "redirecting": "Redirecting to token page...",
+      "congratulations": "Congratulations on successful creation!",
+      "contractAddress": "Contract Address:",
+      "share": "Share",
+      "viewHomepage": "View on Homepage",
+      "shareText": "I just created a new token! Contract address: {address}"
+    },
+    "auth": {
+      "required": "Authentication Required",
+      "connectWalletToUpload": "Please connect your wallet and sign the message to upload images",
+      "failed": "Authentication Failed",
+      "failedMessage": "Failed to authenticate. Please try again",
+      "success": "Authentication Successful",
+      "successMessage": "You can now upload images",
+      "signatureRequired": "Signature Required",
+      "signatureDescription": "To upload images and create tokens, you need to sign a message to verify ownership of your wallet. This is for security purposes.",
+      "walletAddress": "Wallet Address",
+      "signatureInfo": "This signature request will not trigger any blockchain transaction or cost any gas fees.",
+      "signMessage": "Sign Message",
+      "signing": "Signing..."
+    }
+  },
+  "TokenPage": {
+    "change24h": "24h Change",
+    "marketCap": "Market Cap (USDT)",
+    "liquidity": "Liquidity",
+    "volume24h": "24h Volume (USDT)",
+    "holders": "Holders",
+    "top10": "TOP10",
+    "transactions24h": "24h Transactions",
+    "turnoverRate": "Turnover Rate",
+    "heatValue": "Heat Value",
+    "margin": "Margin (USDT)",
+    "tags": "Tags",
+    "copyAddress": "Copy Address",
+    "share": "Share",
+    "favorite": "Favorite",
+    "unfavorite": "Remove from Favorites",
+    "twitter": "Twitter",
+    "website": "Website",
+    "telegram": "Telegram",
+    "discord": "Discord",
+    "document": "Document",
+    "Settings": {
+      "title": "Settings",
+      "klineColors": "K-line Colors",
+      "klineColorsDesc": "Choose your preferred color scheme for price charts",
+      "greenUpRedDown": "Green Up, Red Down",
+      "redUpGreenDown": "Red Up, Green Down",
+      "rise": "Rise",
+      "fall": "Fall",
+      "marketPanel": "Market Panel",
+      "marketPanelDesc": "Toggle the visibility of the market information panel",
+      "showMarketPanel": "Show Market Panel",
+      "panelVisible": "Panel is visible",
+      "panelHidden": "Panel is hidden",
+      "resetToDefaults": "Reset to Defaults"
+    },
+    "chainBSC": "BSC Chain",
+    "selectToken": "Select Token",
+    "burning": "Burning",
+    "search": "Search",
+    "favorites": "Favorites",
+    "popular": "Popular",
+    "readyToLaunch": "Ready to Launch",
+    "newCoins": "New Coins",
+    "nearlyFull": "Nearly Full",
+    "graduatingToday": "Graduating Today"
+  },
+  "Token": {
+    "title": "Token Details",
+    "contractAddress": "Contract Address",
+    "TrendingTicker": {
+      "title": "Trending Tokens"
+    },
+    "LeftPanel": {
+      "searchPlaceholder": "Search",
+      "tabs": {
+        "popular": "Popular",
+        "ready": "Ready to Launch",
+        "new": "New",
+        "almost": "Almost Full",
+        "graduated": "Graduated Today",
+        "favorite": "Favorites"
+      },
+      "marketTabs": {
+        "market": "Market",
+        "anomaly": "Market Anomaly"
+      },
+      "headers": {
+        "name": "NAME",
+        "price": "Price/Δ%",
+        "mcv": "MC/V"
+      }
+    },
+    "RightPanel": {
+      "buy": "Buy",
+      "sell": "Sell",
+      "amount": "Amount",
+      "enterAmount": "0.00",
+      "available": "Available",
+      "expectedReceive": "Expected to receive",
+      "minReceived": "Min received",
+      "mevProtection": "MEV Protection",
+      "slippage": "Slippage",
+      "custom": "Custom",
+      "buyButton": "Buy {token}",
+      "sellButton": "Sell {token}",
+      "approveButton": "Approve {token}",
+      "connectWallet": "Connect Wallet",
+      "pleaseConnectWalletToTrade": "Please connect your wallet to start trading",
+      "preparing": "Preparing...",
+      "confirmInWallet": "Confirm in Wallet",
+      "processing": "Processing...",
+      "approving": "Approving...",
+      "transactionSuccess": "Transaction Successful",
+      "transactionFailed": "Transaction Failed",
+      "buySuccess": "Successfully bought {amount} BNB worth of {token}",
+      "sellSuccess": "Successfully sold {amount} {token}",
+      "tryAgain": "Please try again",
+      "invalidAmount": "Invalid Amount",
+      "enterValidAmount": "Please enter a valid amount",
+      "cannotBuy": "Cannot Buy",
+      "cannotSell": "Cannot Sell",
+      "checkBalanceAndAmount": "Please check your balance and amount",
+      "approvalRequired": "Approval Required",
+      "approvingTokens": "Approving tokens for trading...",
+      "approvalSuccess": "Approval Successful",
+      "approvalSuccessMessage": "Token approved. You can now sell your tokens.",
+      "preparingSell": "Preparing sell transaction...",
+      "waitingForLaunch": "Waiting for Launch",
+      "tradingNotAvailable": "Trading Not Available",
+      "waitForLaunch": "Please wait for the token to launch",
+      "loadingData": "Loading...",
+      "insufficientBalance": "Insufficient Balance",
+      "amountExceedsBalance": "Amount exceeds your token balance",
+      "settingToMaxBalance": "Setting amount to your maximum balance",
+      "transactionPending": "Transaction Pending",
+      "waitForCompletion": "Please wait for the current transaction to complete"
+    },
+    "BondingCurve": {
+      "title": "Bonding Curve Progress",
+      "description1": "There are still {tokensRemaining} tokens available for sale in the bonding curve, with {raised} BNB remaining (Target: {target} BNB).",
+      "description2": "When the market cap reaches ${marketCapTarget}, all liquidity from the bonding curve will be deposited into Pancake V3 and burned. Progress increases as the price rises."
+    },
+    "PeriodicBurning": {
+      "title": "Periodic Burning",
+      "totalBurnAmount": "Total Burn Amount:",
+      "burnedPercentage": "Burned Percentage:",
+      "totalBurnPeriod": "Total Burn Period:",
+      "remainingLockPeriod": "Remaining Lock Period:",
+      "burnInterval": "Burn Interval:",
+      "singleBurnPercentage": "Single Burn Percentage:",
+      "singleBurnAmount": "Single Burn Amount:",
+      "days": "{count} days",
+      "minutes": "{count} minutes"
+    },
+    "CreatorInfo": {
+      "heat": "Heat",
+      "share": "Share",
+      "introPrefix": "Introduction: ",
+      "defaultDescription": "Flowing Sharpe ratio, eternal wealth god. Left Martin's Sharpe ratio is meaningless, short-term euphoria is an illusion...",
+      "viewMore": "View More"
+    },
+    "HoldersInfo": {
+      "totalSupply": "Total Supply: ",
+      "holders": "Holders",
+      "top10": "TOP10 {percentage}%",
+      "percentage": "Percentage"
+    },
+    "CenterPanel": {
+      "tabs": {
+        "priceChart": "Price Chart",
+        "tokenInfo": "Token Info",
+        "tradingData": "Trading Data",
+        "airdropTasks": "Airdrop Tasks",
+        "fundVoting": "Fund Application Voting"
+      },
+      "chartTypes": {
+        "basic": "Basic Version",
+        "tradingView": "Trading View"
+      },
+      "intervals": {
+        "time": "Time",
+        "oneSecond": "1s",
+        "fifteenMinutes": "15m",
+        "oneHour": "1h",
+        "fourHours": "4h",
+        "oneDay": "1D",
+        "oneWeek": "1W"
+      },
+      "ohlc": {
+        "open": "O",
+        "high": "H",
+        "low": "L",
+        "close": "C",
+        "change": "Change",
+        "amplitude": "Amplitude"
+      },
+      "more": "More",
+      "joinNow": "Join Now",
+      "willOpenAfterCountdown": "Will open after countdown ends"
+    },
+    "TransactionList": {
+      "tabs": {
+        "transactions": "Transactions",
+        "chatRoom": "Chat Room"
+      },
+      "headers": {
+        "date": "Date",
+        "fundraisingProgress": "Fundraising Progress",
+        "direction": "Direction",
+        "valueUsdt": "Value U",
+        "account": "Account"
+      },
+      "buy": "Buy",
+      "sell": "Sell",
+      "fundraisingComplete": "Fundraising Complete",
+      "chatComingSoon": "Chat room coming soon...",
+      "filter": {
+        "rock": "Rock",
+        "crystal": "Crystal",
+        "gem": "Gem",
+        "diamond": "Diamond",
+        "crown": "Crown"
+      },
+      "noTransactions": "No transactions yet",
+      "transactionsWillAppearHere": "Transactions will appear here when trading begins"
+    },
+    "ChatRoom": {
+      "inputPlaceholder": "Enter to join the chat",
+      "sendButton": "Send",
+      "loading": "Loading messages...",
+      "noMessages": "No messages yet",
+      "beFirstToChat": "Be the first to start the conversation!"
+    },
+    "TokenInfo": {
+      "rank": "Rank",
+      "marketCap": "Market Cap",
+      "circulatingSupply": "Circulating Supply",
+      "launchDate": "Launch Date",
+      "fullyDilutedMarketCap": "Fully Diluted Market Cap",
+      "totalSupply": "Total Supply",
+      "marketCapFDVRatio": "Market Cap/FDV",
+      "idoAmount": "IDO Amount",
+      "idoDate": "IDO Date",
+      "withdrawalAddresses": "Withdrawal Addresses",
+      "contractAddress": "Contract Address",
+      "moreInfo": "More Information",
+      "website": "Website",
+      "blockchainExplorer": "Blockchain Explorer",
+      "socialMedia": "Social Media",
+      "tokenDistribution": "Initial Token Distribution",
+      "liquidityPool": "Liquidity Pool",
+      "communityBuilding": "Community Building",
+      "airdrop": "Airdrop",
+      "teamFirstReward": "Team First Reward",
+      "other": "Other",
+      "defaultDescription": "is a meme coin",
+      "units": {
+        "yi": "hundred million",
+        "wan": "ten thousand"
+      },
+      "disclaimer": "*Token information is sourced from third-party market data. We cannot guarantee its accuracy or timeliness. Data is for reference only and should not be used as investment advice. Please verify independently."
+    }
+  },
+  "profile": {
+    "pendingUnlockTokens": "Pending Unlock Tokens",
+    "ownedTokens": "Owned Tokens",
+    "createdTokens": "Created Tokens",
+    "heatedTokens": "Heated Tokens",
+    "totalTradeBnb": "Total Trade BNB",
+    "claim": "Claim",
+    "apply": "Apply",
+    "tabs": {
+      "ido": "IDO",
+      "created": "Created",
+      "owned": "Owned",
+      "followed": "Followed",
+      "activities": "Activities",
+      "createdActivities": "Created Activities",
+      "following": "Following",
+      "followers": "Followers"
+    },
+    "tableSort": {
+      "name": "Name",
+      "hot": "Hot",
+      "projectFundApplication": "Funding",
+      "projectActivityApplication": "Events",
+      "more": "More",
+      "ido": {
+        "totalLocked": "Locked",
+        "totalLockedTime": "Term",
+        "myLocked": "My Locked",
+        "projectLocked": "Vesting",
+        "remainingLockedTime": "Unlocks In",
+        "claimedTokens": "Claimed",
+        "progress": "Progress",
+        "pendingClaim": "Pending",
+        "claimToken": "Claim"
+      },
+      "created": {
+        "marketCap": "Market Cap",
+        "progress": "Progress",
+        "totalLocked": "Locked",
+        "myLocked": "My Locked",
+        "projectLocked": "Vesting"
+      },
+      "followed": {
+        "price": "Price",
+        "priceChange24h": "24h Change",
+        "volume24h": "24h Vol",
+        "marketCap": "Market Cap",
+        "hot": "Hot",
+        "transactions": "TXs",
+        "progress": "Progress",
+        "totalLocked": "Locked",
+        "myLocked": "My Locked",
+        "projectLocked": "Vesting",
+        "holders": "Holders",
+        "top10": "Top 10",
+        "age": "Age"
+      },
+      "owned": {
+        "marketCap": "Market Cap",
+        "transactions": "TXs",
+        "progress": "Progress",
+        "totalLocked": "Locked",
+        "myLocked": "My Locked",
+        "projectLocked": "Vesting",
+        "holders": "Holders",
+        "top10": "Top 10",
+        "age": "Age"
+      },
+      "activities": {
+        "activityName": "Event",
+        "activityAddress": "Address",
+        "createdAt": "Created",
+        "activityType": "Type",
+        "activityTime": "Time",
+        "totalAmount": "Prize Pool",
+        "status": "Status",
+        "joinedProgress": "Joined",
+        "rewardStatus": "Rewards"
+      }
+    },
+    "actions": {
+      "createCoin": "Create Coin",
+      "createActivity": "Create Activity",
+      "apply": "Apply",
+      "claim": "Claim"
+    },
+    "dialog": {
+      "confirmClaim": "Confirm Claim",
+      "confirmClaimMessage": "Confirm transfer to current wallet address:",
+      "confirmClaimButton": "Claim Now",
+      "createActivity": "Create Activity",
+      "createActivityAboutCA": "Project required for the activity:",
+      "createActivityInput": "Please enter CA",
+      "createActivityButton": "Create Activity",
+      "fundingApply": "Project Funding Proposal Application",
+      "fundingApplyCreate": "Create Proposal",
+      "fundingApplyTabs": {
+        "new": "Latest Funding",
+        "applying": "Applying",
+        "finished": "Finished"
+      }
+    },
+    "createEvent": {
+      "title": "Create Activity",
+      "name": "Activity Name",
+      "namePlaceholder": "Please enter the activity name",
+      "description": "Activity Description",
+      "descriptionPlaceholder": "Please enter the activity description",
+      "coverImage": "Activity Cover",
+      "categoryType": "Activity Type",
+      "categoryTypePlaceholder": "Please select the activity type",
+      "categoryTypeOptions": {
+        "airdrop": "Airdrop Activity",
+        "upcoming": "Upcoming Launch"
+      },
+      "playType": "Activity Play",
+      "playTypePlaceholder": "Please select the activity play",
+      "playTypeOptions": {
+        "trade": "Trade Volume",
+        "invite": "Invite Users to Trade Tokens",
+        "heatVote": "Heat Vote",
+        "comment": "Comment"
+      },
+      "rewardTokenType": "Reward Token Type",
+      "rewardTokenTypePlaceholder": "Please select the reward token type",
+      "rewardAmount": "Reward Amount",
+      "rewardAmountPlaceholder": "Please enter the reward amount",
+      "rewardSlots": "Reward Slots",
+      "rewardSlotsPlaceholder": "Please enter the reward slots",
+      "rewardTokenSymbol": "Reward Token Symbol",
+      "rewardTokenSymbolPlaceholder": "Please enter the reward token symbol",
+      "minDailyTradeAmount": "Minimum Daily Trade Amount",
+      "inviteMinCount": "Invite",
+      "inviteMinCountPlaceholder": "Please enter the invite count",
+      "inviteeMinTradeAmount": "User Trade Amount",
+      "inviteeMinTradeAmountPlaceholder": "Please enter the user trade amount",
+      "inviteeMinTradeAmountUnit": "Amount Greater Than",
+      "heatVoteTarget": "Heat Vote Target",
+      "heatVoteTargetPlaceholder": "Please enter the heat vote target",
+      "heatVoteTargetUnit": "Votes",
+      "heatVoteTargetValue": "Can Get:",
+      "commentMinCount": "Comment Count",
+      "commentMinCountPlaceholder": "Please enter the comment count",
+      "commentMinCountUnit": "Comments",
+      "commentMinCountValue": "Can Get:",
+      "time": "Time",
+      "timeStartPlaceholder": "Please select the start time",
+      "timeStartTo": "To",
+      "timeEndPlaceholder": "Please select the end time",
+      "createActivity": "Create Activity",
+      "sideBar": {
+        "title": "More popular activity applications",
+        "contact": "Contact us",
+        "email": "Official email: support@metaland.io"
+      }
+    }
+  }
+}

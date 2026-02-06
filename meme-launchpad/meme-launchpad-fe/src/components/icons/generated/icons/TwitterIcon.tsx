@@ -1,0 +1,24 @@
+'use client'
+
+import * as React from 'react'
+import type { SVGProps } from 'react'
+export const TwitterIcon = (
+  props: React.SVGProps<SVGSVGElement> & { size?: number } & {
+    size?: number
+  }
+) => (
+  <svg
+    width={props.size || 12}
+    height={props.size || 12}
+    viewBox="0 0 11 10"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path
+      d="M0.0256973 0L4.15071 5.51526L0 9.99954H0.93443L4.56873 6.07368L7.50488 9.99954H10.6842L6.32728 4.17405L10.191 0H9.25654L5.90989 3.61563L3.20563 0H0.026317H0.0256973ZM1.39945 0.688153H2.85969L9.30919 9.31139H7.84894L1.39945 0.688153Z"
+      fill="#F0F1F5"
+    />
+  </svg>
+)
+TwitterIcon.displayName = 'TwitterIcon'
