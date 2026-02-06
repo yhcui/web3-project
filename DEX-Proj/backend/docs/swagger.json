@@ -1,0 +1,173 @@
+{
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "DEX 交易报价计算 API（Uniswap V3 模型）",
+        "title": "Quote API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "email": "support@dexbot.io"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/api/v1/quote": {
+            "post": {
+                "description": "根据输入代币、输出代币和输入金额计算输出金额，支持跨多个tick区间的精确计算",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quote"
+                ],
+                "summary": "获取交易报价（Uniswap V3模型）",
+                "parameters": [
+                    {
+                        "description": "报价请求",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.QuoteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/api.QuoteResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.QuoteRequest": {
+            "type": "object",
+            "required": [
+                "amountIn",
+                "tokenIn",
+                "tokenOut"
+            ],
+            "properties": {
+                "amountIn": {
+                    "type": "string"
+                },
+                "poolAddress": {
+                    "description": "可选：指定池子地址",
+                    "type": "string"
+                },
+                "tokenIn": {
+                    "type": "string"
+                },
+                "tokenOut": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.QuoteResponse": {
+            "type": "object",
+            "properties": {
+                "amountIn": {
+                    "description": "输入金额",
+                    "type": "string"
+                },
+                "amountOut": {
+                    "description": "输出金额",
+                    "type": "string"
+                },
+                "crossedTicks": {
+                    "description": "跨越的tick数量",
+                    "type": "integer"
+                },
+                "finalPrice": {
+                    "description": "最终价格",
+                    "type": "string"
+                },
+                "initialPrice": {
+                    "description": "初始价格",
+                    "type": "string"
+                },
+                "newSqrtPriceX96": {
+                    "description": "交易后的价格",
+                    "type": "string"
+                },
+                "newTick": {
+                    "description": "交易后的tick",
+                    "type": "integer"
+                },
+                "poolAddress": {
+                    "description": "使用的池子地址",
+                    "type": "string"
+                },
+                "priceImpact": {
+                    "description": "价格影响百分比",
+                    "type": "number"
+                },
+                "simulated": {
+                    "type": "boolean"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "api.Response": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
