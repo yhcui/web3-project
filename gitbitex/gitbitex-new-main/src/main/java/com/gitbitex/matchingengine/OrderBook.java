@@ -72,6 +72,24 @@ public class OrderBook {
 
     /**
      * 下单
+     * 下单 → 资金冻结 → 订单接收 → 价格匹配 → 成交处理 → 剩余处理
+     * 设计亮点
+     * 1. 双重迭代器模式
+     * 2. 价格时间优先原则 通过 Depth 的数据结构保证价格优先 同价位订单按时间顺序匹配（由 PriceGroupedOrderCollection 保证）
+     * 3. 状态机驱动  RECEIVED → OPEN/FILLED/CANCELLED/REJECTE
+     * 4. 事件驱动架构  每个关键步骤都发送消息
+     * ⚠️ 潜在问题
+     * 1. 市价单的精度损失
+     * 2. 性能瓶颈 单层循环嵌套，最坏情况 O(n×m)
+     * 2. 并发安全 依赖外部线程同步（MatchingEngineThread 单线程消费） 没有内部锁机制
+     *
+     *  这段代码实现了一个经典的限价订单簿撮合算法，具有以下特征：
+     * ✅ 价格优先、时间优先
+     * ✅ 支持限价单和市价单
+     * ✅ 剩余限价单自动挂单
+     * ✅ 完整的状态管理和事件通知
+     * ✅ 资金安全（先冻结后交易）
+     * 是一个简洁但功能完整的撮合引擎核心实现。
      * @param takerOrder 吃单订单
      */
     public void placeOrder(Order takerOrder) {
@@ -81,6 +99,12 @@ public class OrderBook {
             return;
         }
 
+        /*
+            分配序列号与资金冻结
+            买单：冻结计价货币（如 USDT）
+            卖单：冻结基础货币（如 BTC）
+            资金不足时，订单状态设为 REJECTED 并发送消息
+         */
         takerOrder.setSequence(++orderSequence);
 
         boolean ok;
@@ -96,71 +120,92 @@ public class OrderBook {
             return;
         }
 
-        // order received
+        // order received 订单接收确认 向市场广播订单已接收 此时订单还未进入订单簿
         takerOrder.setStatus(OrderStatus.RECEIVED);
         messageSender.send(orderMessage(takerOrder.clone()));
 
         // start matching
+        // 吃单是买单 → 匹配卖单（asks）
+        // 吃单是卖单 → 匹配买单（bids）
         var makerDepth = takerOrder.getSide() == OrderSide.BUY ? asks : bids;
         var depthEntryItr = makerDepth.entrySet().iterator();
+        // 使用带标签的循环（MATCHING:），用于从内层直接跳出外层
         MATCHING:
+        // 外层循环：遍历价格档位
+        // 按照价格优先顺序遍历（卖单从低到高，买单从高到低）
         while (depthEntryItr.hasNext()) {
             var entry = depthEntryItr.next();
-            var price = entry.getKey();
-            var orders = entry.getValue();
+            var price = entry.getKey();     // 价格档位
+            var orders = entry.getValue();  // 该价位的订单集合
 
             // check whether there is price crossing between the taker and the maker
+            // 价格交叉检查
+            // 限价单：检查买入价是否 ≥ 卖出价
+            // 市价单：始终返回 true（见 261-263 行）
+            // 如果价格不交叉，停止匹配
             if (!isPriceCrossed(takerOrder, price)) {
                 break;
             }
 
+            // 内层循环：逐个匹配订单
             var orderItr = orders.entrySet().iterator();
             while (orderItr.hasNext()) {
                 var orderEntry = orderItr.next();
                 var makerOrder = orderEntry.getValue();
 
                 // make trade
+                // 调用 trade() 方法执行成交. 如果返回 null（吃单数量为 0），完全退出匹配
                 Trade trade = trade(takerOrder, makerOrder);
                 if (trade == null) {
-                    break MATCHING;
+                    break MATCHING;  //无法成交，直接退出整个匹配
                 }
 
                 // exchange account funds
+                // 资金划转 在两个账户之间转移资产 基于成交数量和金额计算
                 accountBook.exchange(takerOrder.getUserId(), makerOrder.getUserId(), product.getBaseCurrency(),
                         product.getQuoteCurrency(), takerOrder.getSide(), trade.getSize(), trade.getFunds());
 
                 // if the maker order is filled or cancelled, remove it from the order book.
+                // 处理完成的挂单 只有完全成交或取消的订单才会被移除 部分成交的订单会保留在订单簿中
                 if (makerOrder.getStatus() == OrderStatus.FILLED || makerOrder.getStatus() == OrderStatus.CANCELLED) {
-                    orderItr.remove();
-                    orderById.remove(makerOrder.getId());
-                    unholdOrderFunds(makerOrder, product);
+                    orderItr.remove(); // 从价格档位移除
+                    orderById.remove(makerOrder.getId()); // 从订单映射移除
+                    unholdOrderFunds(makerOrder, product); // 解冻剩余资金
                 }
+                // 发送成交通知.发送挂单状态更新 发送成交记录
 
                 orderBookSequence++;
                 messageSender.send(orderMessage(makerOrder.clone()));
                 messageSender.send(tradeMessage(trade));
             }
-
+            // 清理空价格档 如果某个价位的所有订单都被消耗，删除该价位
             // remove price line with empty order list
             if (orders.isEmpty()) {
                 depthEntryItr.remove();
             }
         }
-
+        /*
+            | 订单类型 | 剩余数量 | 处理方式 | 状态 |
+            |---------|---------|---------|------|
+            | 限价单 | > 0 | 加入订单簿 | OPEN |
+            | 市价单 | > 0 | 取消剩余 | CANCELLED |
+            | 任意 | = 0 | 完成 | FILLED |
+         */
         // If the taker order is not fully filled, put the taker order into the order book, otherwise mark
         // the order as done,The market order will never be added to the order book, and the market order without
         // fully filled will be cancelled
+        // 处理吃单剩余数量
         if (takerOrder.getType() == OrderType.LIMIT && takerOrder.getRemainingSize().compareTo(BigDecimal.ZERO) > 0) {
             addOrder(takerOrder);
             takerOrder.setStatus(OrderStatus.OPEN);
             orderBookSequence++;
         } else {
             if (takerOrder.getRemainingSize().compareTo(BigDecimal.ZERO) > 0) {
-                takerOrder.setStatus(OrderStatus.CANCELLED);
+                takerOrder.setStatus(OrderStatus.CANCELLED); // 市价单未完全成交→取消
             } else {
-                takerOrder.setStatus(OrderStatus.FILLED);
+                takerOrder.setStatus(OrderStatus.FILLED); // 完全成交
             }
-            unholdOrderFunds(takerOrder, product);
+            unholdOrderFunds(takerOrder, product);// 解冻资金
         }
 
         messageSender.send(orderMessage(takerOrder.clone()));

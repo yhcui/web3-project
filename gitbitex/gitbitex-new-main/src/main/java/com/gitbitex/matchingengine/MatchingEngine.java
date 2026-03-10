@@ -196,7 +196,7 @@ public class MatchingEngine {
     }
 
     /**
-     * 创建订单簿
+     * 创建订单簿 - 手动创建交易对时会加入
      * @param productId 交易对 ID
      */
     private void createOrderBook(String productId) {

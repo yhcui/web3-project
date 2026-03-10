@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npm start:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(nvm install:*)",
+      "Bash(nvm use:*)",
+      "Bash(node --version && npm --version)"
     ]
   }
 }

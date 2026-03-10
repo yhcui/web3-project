@@ -41,6 +41,8 @@ public class MatchingEngineThread extends KafkaConsumerThread<String, Command>
     }
 
     /**
+     * 消费者分区重平衡（Rebalance）的回调方法
+     * 在分区被夺走之前进行清理工作 常用于提交偏移量、关闭资源等（但这段代码只记录了日志）
      * 分区撤销回调
      * @param partitions 被撤销的分区
      */
@@ -52,7 +54,13 @@ public class MatchingEngineThread extends KafkaConsumerThread<String, Command>
     }
 
     /**
+     * 当消费者组发生重平衡，当前消费者被分配了新的分区时
      * 分区分配回调
+     * 1、记录日志：打印被分配的分区信息
+     * 2、获取撮合引擎实例：从加载器中获取准备好的匹配引擎
+     * 3、定位消费位置：如果有启动偏移量，将消费者定位到指定位置继续消费
+     * 每个交易对（Product）的命令都在同一个分区中
+     *
      * @param partitions 被分配的分区
      */
     @Override
@@ -83,6 +91,7 @@ public class MatchingEngineThread extends KafkaConsumerThread<String, Command>
      */
     @Override
     protected void doPoll() {
+//        设置 Kafka 消费者的轮询超时时间为5秒。如果5秒内有消息，立即返回。如果5秒后还没有消息，返回空的结果。
         consumer.poll(Duration.ofSeconds(5))
                 .forEach(x -> matchingEngine.executeCommand(x.value(), x.offset()));
     }
