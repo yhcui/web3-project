@@ -28,6 +28,12 @@ LIMIT 10;
 -- 2. 查找从 TokenA 出发的所有可能路径（一跳）
 -- ============================================
 -- 找出所有可以从 TokenA 交易的 token
+/*
+  CASE WHEN 语句用于动态判断和返回对应的代币信息
+  如果 token0_address 等于传入的参数（用户查询的代币地址）则返回 token1_address（另一个代币的地址） 否则返回 token0_address
+  如果 token0_address 等于传入的参数 则返回 token1_symbol（另一个代币的符号） 否则返回 token0_symbol
+
+ */
 SELECT 
     CASE 
         WHEN token0_address = ? THEN token1_address
@@ -52,6 +58,12 @@ ORDER BY liquidity_usd DESC;
 -- 3. 两跳路由：TokenA -> TokenB -> TokenC
 -- ============================================
 -- 找出通过中间 token 的两跳路径
+/*
+ WITH first_hop AS 是 SQL 中的 CTE（Common Table Expression，公共表表达式） 语法,定义临时结果集
+ first_hop 就是一个临时表，可以在后续的主查询中像普通表一样使用它。
+
+
+*/
 WITH first_hop AS (
     SELECT 
         pool_address as pool1,
@@ -93,15 +105,17 @@ LIMIT 20;
 
 
 -- ============================================
--- 4. 通过常见中间 token 的多跳路由
+-- 4. 通过常见中间 token 的多跳路由 自动发现最优的两跳交易路径，帮助用户在复杂的 DEX 网络中找到最划算的交易路线！
 -- ============================================
 -- 查找通过 WETH/USDC/USDT 等常见中间 token 的路径
+-- 第一步：找到所有可用的桥接代币bridge_tokens  筛选出 WETH、稳定币等常用桥接代币 这些代币流动性好，交易对多，适合做中间媒介
 WITH bridge_tokens AS (
     SELECT token_address, symbol
     FROM tokens
     WHERE chain_id = ?
         AND (is_weth = 1 OR is_stable = 1)
 ),
+-- 找到从代币 A 到桥接代币的路径 找到所有从代币A可以兑换的桥接代币 记录池子信息、流动性、手续费
 token_a_to_bridge AS (
     SELECT 
         bt.token_address as bridge_token,
@@ -120,7 +134,8 @@ token_a_to_bridge AS (
         )
         AND tlp.liquidity_usd > 50000
 )
-SELECT 
+--  找到从桥接代币到目标代币 B 的路径 基于上一步的结果，继续找到能兑换到代币 B 的池子
+SELECT
     tab.bridge_token,
     tab.bridge_symbol,
     tab.pool1,
@@ -131,7 +146,7 @@ SELECT
     tlp.dex_name as dex2,
     tlp.liquidity_usd as liquidity2,
     tlp.fee_rate as fee2,
-    -- 计算总手续费
+    -- 计算总手续费 总手续费 = 第一跳手续费 + 第二跳手续费（复利计算）
     (1 - (1 - tab.fee1) * (1 - tlp.fee_rate)) as total_fee_rate,
     -- 使用较小的流动性作为瓶颈指标
     MIN(tab.liquidity1, tlp.liquidity_usd) as bottleneck_liquidity
@@ -206,6 +221,38 @@ INSERT OR REPLACE INTO token_liquidity_pools (
 -- ============================================
 -- 8. 查找可能的套利机会（同一交易对在不同 DEX 的价格差）
 -- ============================================
+/*
+在这个 SQL 中，reserve0 和 reserve1 代表交易对池子中两种代币的储备量。
+具体含义：
+在 DEX（去中心化交易所）中，每个流动性池都包含两种代币的储备：
+    reserve0 = token0_address 对应代币的储备量
+    reserve1 = token1_address 对应代币的储备量
+实际例子：
+假设有一个 USDT-ETH 交易对：
+    token0_address = USDT
+    token1_address = ETH
+    reserve0 = 1,000,000 USDT
+    reserve1 = 500 ETH
+SQL
+CAST(reserve0 AS REAL) / CAST(reserve1 AS REAL) as price_ratio
+
+这行代码计算价格比率：
+    price_ratio = reserve0 / reserve1
+    = 1,000,000 / 500
+    = 2000 USDT/ETH（1 ETH = 2000 USDT）
+
+在整个查询中的作用：
+这个查询用于发现套利机会：
+    找到相同的交易对（比如都是 USDT-ETH）
+    比较不同 DEX 的价格比率（price_ratio）
+    如果价格差异超过 1%，就存在套利机会
+示例：
+    Uniswap 上：1 ETH = 2000 USDT
+    SushiSwap 上：1 ETH = 2050 USDT
+    价格差：2.5% → 可以低买高卖套利
+这就是为什么查询最后要按价格差异百分比（price_diff_percent）降序排列，找出最大的套利机会。
+
+ */
 WITH token_pairs AS (
     SELECT 
         CASE 
