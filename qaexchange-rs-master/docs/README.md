@@ -1,0 +1,249 @@
+# QAExchange-RS 文档中心
+
+**版本**: v1.5.0
+**最后更新**: 2025-12-22
+
+欢迎使用 QAExchange-RS 文档！本文档中心提供完整的系统架构、API 参考、集成指南和开发文档。
+
+---
+
+## 📸 系统截图
+
+### 仪表盘与监控
+![Dashboard](pics/dashboard.png)
+![Monitor](pics/monitor.png)
+
+### 账户管理
+![Accounts](pics/accounts.png)
+![Accounts History](pics/accountshistory.png)
+
+### 交易功能
+![Trading](pics/trading.png)
+![Order](pics/order.png)
+![Batch Order](pics/batchorder.png)
+![Conditional Order](pics/conditionalorder.png)
+
+### 持仓与风控
+![Holding](pics/holding.png)
+![Risk](pics/risk.png)
+
+### K线与行情
+![KLine](pics/kline.png)
+
+### 历史记录
+![Trade History](pics/tradehistory.png)
+![Transfer](pics/transfer.png)
+
+---
+
+## 📚 文档导航
+
+### 🚀 [01. 快速开始](./01_getting_started/)
+新用户入门必读，快速搭建和运行 QAExchange-RS。
+
+- [快速开始指南](./01_getting_started/quick_start.md) - 5分钟快速上手
+- [构建检查清单](./01_getting_started/build_checklist.md) - 构建前必读
+
+---
+
+### 🏗️ [02. 系统架构](./02_architecture/)
+深入了解 QAExchange-RS 的核心架构设计。
+
+- [系统总览](./02_architecture/system_overview.md) - 整体架构与模块划分
+- [高性能架构](./02_architecture/high_performance.md) - P99 < 100μs 延迟设计
+- [数据模型](./02_architecture/data_models.md) - QIFI/TIFI/DIFF 协议详解
+- [交易机制](./02_architecture/trading_mechanism.md) - 撮合引擎与交易流程
+- [解耦存储架构](./02_architecture/decoupled_storage.md) - 零拷贝 + WAL 持久化
+
+---
+
+### ⚙️ [03. 核心模块](./03_core_modules/)
+核心功能模块详细说明。
+
+#### 存储系统
+- [WAL 设计](./03_core_modules/storage/wal.md) - Write-Ahead Log 崩溃恢复
+- [MemTable 实现](./03_core_modules/storage/memtable.md) - OLTP/OLAP 内存表
+- [SSTable 格式](./03_core_modules/storage/sstable.md) - rkyv/Parquet 持久化
+- [压缩策略](./03_core_modules/storage/compression.md) - 按数据类型动态压缩 ✨ **新增**
+- [二级索引](./03_core_modules/storage/index.md) - 时序/合约/类型复合索引 ✨ **新增**
+- [查询引擎](./03_core_modules/storage/query_engine.md) - Polars SQL 查询
+- [复制系统](./03_core_modules/storage/replication.md) - 主从复制与故障转移
+
+#### 撮合引擎 ✨ **新增**
+- [撮合引擎模块](./03_core_modules/matching/README.md) - 核心撮合引擎
+  - [测试指南](./03_core_modules/matching/testing.md) - 76个测试场景详解
+  - [性能基准](./03_core_modules/matching/benchmark.md) - 吞吐量/延迟测试报告
+  - [压力测试](./03_core_modules/matching/stress_testing.md) - 多标的多用户压力测试
+
+#### 市场数据模块 ✨ **新增**
+- [市场数据模块](./03_core_modules/market/README.md) - 行情数据服务总览
+- [快照生成器](./03_core_modules/market/snapshot_generator.md) - 每秒级别市场快照
+- [数据生产测试](./03_core_modules/market/data_production_testing.md) - 撮合后数据流测试 ✨ **最新**
+
+#### 通知系统
+- [通知架构](./03_core_modules/notification/architecture.md) - 零拷贝通知推送
+- [订阅管理](./03_core_modules/notification/subscription.md) - 订阅过滤与路由
+
+#### 因子计算系统 ✨ **新增**
+- [因子计算系统](./03_core_modules/factor/README.md) - 流批一体化因子引擎
+  - 增量算子 (RollingMean, EMA, RSI, MACD)
+  - Factor DAG 依赖图
+  - 物化视图缓存
+- [因子 WAL 集成](./03_core_modules/factor/wal_persister.md) - 异步持久化与恢复 ✨ **新增**
+
+#### 集群管理 ✨ **新增**
+- [集群管理系统](./03_core_modules/cluster/README.md) - 一致性哈希分片
+  - 虚拟节点映射
+  - 带权重负载均衡
+  - 副本分布策略
+
+---
+
+### 📡 [04. API 参考](./04_api/)
+完整的 API 文档和协议规范。
+
+#### **前后端交互协议** ✨ **新增**
+- [完整协议文档](./protocol/README.md) - HTTP REST API + WebSocket DIFF 协议完整规范
+
+#### WebSocket API
+- [协议规范](./04_api/websocket/protocol.md) - DIFF 协议完整定义
+- [DIFF 协议详解](./04_api/websocket/diff_protocol.md) - 差分同步机制
+- [快速开始](./04_api/websocket/quick_start.md) - WebSocket 客户端示例
+
+#### HTTP API
+- [用户 API](./04_api/http/user_api.md) - 用户/账户/订单管理接口
+- [管理员 API](./04_api/http/admin_api.md) - 系统管理接口
+
+#### 错误处理
+- [错误码参考](./04_api/error_codes.md) - 完整错误码列表
+
+---
+
+### 🔌 [05. 集成指南](./05_integration/)
+前端集成和序列化指南。
+
+#### 前端集成
+- [集成指南](./05_integration/frontend/integration_guide.md) - Vue.js 集成示例
+- [API 使用指南](./05_integration/frontend/api_guide.md) - 前端 API 调用规范
+- [集成检查清单](./05_integration/frontend/integration_checklist.md) - 集成验收标准
+
+#### 序列化
+- [序列化指南](./05_integration/serialization.md) - rkyv/JSON 序列化最佳实践
+
+---
+
+### 🛠️ [06. 开发指南](./06_development/)
+开发、测试、部署文档。
+
+- [WebSocket 集成指南](./06_development/websocket_integration.md) - DIFF 协议接入详解
+- [测试指南](./06_development/testing.md) - 单元测试与集成测试
+- [部署指南](./06_development/deployment.md) - 生产环境部署
+- [TLS 安全指南](./06_development/tls_security_guide.md) - TLS/mTLS 证书配置 ✨ **新增**
+- [可观测性指南](./06_development/observability_guide.md) - OpenTelemetry 集成 ✨ **新增**
+
+---
+
+### 📖 [07. 参考资料](./07_reference/)
+术语表、常见问题、性能基准。
+
+- [术语表](./07_reference/glossary.md) - 专业术语解释（待创建）
+- [常见问题 FAQ](./07_reference/faq.md) - 常见问题解答（待创建）
+- [性能基准](./07_reference/benchmarks.md) - 性能测试数据（待创建）
+
+---
+
+### 🎓 [08. 高级主题](./08_advanced/)
+深度技术文档和实现报告。
+
+#### 技术路线图 ✨ **新增**
+- [2025-2026 技术路线图](./08_advanced/ROADMAP_2025_2026.md) - Phase 14-16+ 规划与里程碑
+
+#### Phase 报告
+- [Phase 6-7 实现报告](./08_advanced/phase_reports/phase_6_7.md) - 复制系统与性能优化
+- [Phase 12-13 实现报告](./08_advanced/phase_reports/phase_12_13.md) - 可观测性与安全层 ✨ **新增**
+
+#### 实现总结
+- [市场数据实现](./08_advanced/implementation_summaries/market_data.md) - Phase 9 市场数据增强
+- [管理功能实现](./08_advanced/implementation_summaries/management_features.md) - Phase 10 用户管理
+- [K线实时推送系统](./06_development/KLINE_IMPLEMENTATION_SUMMARY.md) - K线聚合与WebSocket推送完整实现 ✨ **最新**
+
+#### 技术深度
+- [市场数据增强](./08_advanced/technical_deep_dive/market_data_enhancement.md) - L1 缓存与 WAL 恢复
+
+#### DIFF 测试报告
+- [主测试报告](./08_advanced/diff_test_reports/main_report.md) - DIFF 协议测试结果
+
+---
+
+### 🗄️ [09. 归档](./09_archive/)
+历史文档和已废弃的计划。
+
+- [旧计划](./09_archive/old_plans/) - 已完成或废弃的计划文档
+- [历史报告](./09_archive/historical_reports/) - 开发过程历史报告
+- [已废弃](./09_archive/deprecated/) - 已废弃的功能文档
+
+---
+
+## 🔍 快速查找
+
+### 按角色查找
+- **新手开发者**: [快速开始](./01_getting_started/) → [系统架构](./02_architecture/)
+- **前端开发者**: [WebSocket API](./04_api/websocket/) → [前端集成](./05_integration/frontend/)
+- **后端开发者**: [核心模块](./03_core_modules/) → [开发指南](./06_development/)
+- **运维工程师**: [部署指南](./06_development/deployment.md) → [性能基准](./07_reference/benchmarks.md)
+- **架构师**: [高性能架构](./02_architecture/high_performance.md) → [高级主题](./08_advanced/)
+
+### 按主题查找
+- **前后端协议**: [完整协议文档](./protocol/README.md) - HTTP REST API + WebSocket DIFF 协议完整规范 ✨ **推荐**
+- **撮合引擎**: [撮合引擎模块](./03_core_modules/matching/README.md), [测试指南](./03_core_modules/matching/testing.md), [性能基准](./03_core_modules/matching/benchmark.md), [压力测试](./03_core_modules/matching/stress_testing.md) ✨ **新增**
+- **性能优化**: [高性能架构](./02_architecture/high_performance.md), [解耦存储](./02_architecture/decoupled_storage.md), [压缩策略](./03_core_modules/storage/compression.md), [二级索引](./03_core_modules/storage/index.md), [撮合性能基准](./03_core_modules/matching/benchmark.md)
+- **数据持久化**: [WAL](./03_core_modules/storage/wal.md), [SSTable](./03_core_modules/storage/sstable.md), [压缩策略](./03_core_modules/storage/compression.md)
+- **市场数据**: [快照生成器](./03_core_modules/market/snapshot_generator.md), [K线聚合系统](./03_core_modules/market/kline.md), [K线实时推送](./06_development/KLINE_IMPLEMENTATION_SUMMARY.md), [数据生产测试](./03_core_modules/market/data_production_testing.md) ✨ **新增**
+- **协议集成**: [完整协议文档](./protocol/README.md), [DIFF 协议](./04_api/websocket/diff_protocol.md), [数据模型](./02_architecture/data_models.md)
+- **WebSocket**: [协议规范](./04_api/websocket/protocol.md), [前端集成](./05_integration/frontend/integration_guide.md), [K线推送](./06_development/KLINE_IMPLEMENTATION_SUMMARY.md)
+- **测试部署**: [测试指南](./06_development/testing.md), [K线测试](./06_development/KLINE_TESTING_GUIDE.md), [部署指南](./06_development/deployment.md)
+- **因子计算**: [因子系统](./03_core_modules/factor/README.md), [因子 WAL 集成](./03_core_modules/factor/wal_persister.md) - 流批一体化、增量算子、DAG 依赖、异步持久化 ✨ **更新**
+- **二级索引**: [索引系统](./03_core_modules/storage/index.md) - 时序索引、合约索引、类型索引、复合查询 ✨ **新增**
+- **集群管理**: [集群系统](./03_core_modules/cluster/README.md) - 一致性哈希、分片路由、副本分布 ✨ **新增**
+- **查询引擎**: [查询引擎](./03_core_modules/storage/query_engine.md) - Polars SQL、流批混合查询 ✨ **更新**
+- **可观测性**: [可观测性指南](./06_development/observability_guide.md) - OpenTelemetry 追踪、Prometheus 指标、Grafana 仪表盘 ✨ **新增**
+- **安全配置**: [TLS 安全指南](./06_development/tls_security_guide.md) - TLS/mTLS 证书管理、rustls 配置 ✨ **新增**
+- **技术路线**: [2025-2026 路线图](./08_advanced/ROADMAP_2025_2026.md) - Phase 14-16+ 技术规划 ✨ **新增**
+
+---
+
+## 📊 文档版本信息
+
+| 模块 | 版本 | 最后更新 | 状态 |
+|------|------|----------|------|
+| 快速开始 | v1.0.0 | 2025-10-06 | ✅ 完整 |
+| 系统架构 | v0.5.0 | 2025-12-18 | ✅ 完整（新增可观测性/安全层） |
+| 核心模块 | v1.4.0 | 2025-12-17 | ✅ 完整（新增数据生产测试文档） |
+| **撮合引擎** | **v0.2.0** | **2025-12-17** | ✅ **新增（76测试/压力测试/性能基准）** |
+| **市场数据** | **v0.2.0** | **2025-12-17** | ✅ **新增（22个数据生产测试）** |
+| **协议文档** | **v1.0.0** | **2025-12-15** | ✅ **新增（HTTP REST + WebSocket DIFF）** |
+| API 参考 | v1.0.0 | 2025-10-06 | ✅ 完整 |
+| 集成指南 | v1.0.0 | 2025-10-06 | ✅ 完整 |
+| 开发指南 | v1.2.0 | 2025-12-18 | ✅ 完整（新增TLS/可观测性指南） |
+| 参考资料 | v1.1.0 | 2025-12-18 | ✅ 完整（Phase 12-13 性能指标） |
+| 高级主题 | v1.2.0 | 2025-12-18 | ✅ 完整（新增路线图/Phase 12-13报告） |
+| 归档 | - | 2025-10-06 | ✅ 已归档 |
+
+---
+
+## 🤝 贡献文档
+
+发现文档问题或想要改进？请参考 [贡献指南](./06_development/contributing.md)（待创建）。
+
+---
+
+## 📮 反馈与支持
+
+- **问题报告**: 请提交 GitHub Issue
+- **功能建议**: 请提交 Feature Request
+- **文档改进**: 欢迎提交 Pull Request
+
+---
+
+**最后更新**: 2025-12-22
+**维护者**: @yutiansut @quantaxis
