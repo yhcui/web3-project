@@ -6,6 +6,10 @@ import org.apache.kafka.common.serialization.Deserializer;
 
 import java.nio.charset.Charset;
 
+/**
+ * 命令反序列化器
+ * 将 Kafka 消息反序列化为对应的命令对象
+ */
 @Slf4j
 public class CommandDeserializer implements Deserializer<Command> {
     @Override

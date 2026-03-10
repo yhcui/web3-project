@@ -6,8 +6,18 @@ import org.apache.kafka.common.serialization.Deserializer;
 
 import java.nio.charset.Charset;
 
+/**
+ * 撮合引擎消息反序列化器
+ * 将 Kafka 消息反序列化为对应的消息类型
+ */
 @Slf4j
 public class MatchingEngineMessageDeserializer implements Deserializer<Message> {
+    /**
+     * 反序列化消息
+     * @param topic Kafka 主题
+     * @param bytes 消息字节数组
+     * @return 消息对象
+     */
     @Override
     public Message deserialize(String topic, byte[] bytes) {
         try {

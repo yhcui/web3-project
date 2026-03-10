@@ -19,10 +19,8 @@
 package com.gitbitex.stripexecutor;
 
 /**
- * All of the Runnables in the same "Stripe" will be executed consecutively.
- *
- * @author Dr Heinz M. Kabutz
- * @see StripedExecutorService
+ * 条纹运行任务接口
+ * 同一条纹的任务将按顺序执行
  */
 public interface StripedRunnable extends Runnable, StripedObject {
 }

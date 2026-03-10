@@ -9,6 +9,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 
+/**
+ * 订单管理器
+ * 负责订单数据的保存
+ */
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -16,6 +20,10 @@ public class OrderManager {
     private final OrderRepository orderRepository;
     private final FillRepository fillRepository;
 
+    /**
+     * 批量保存订单
+     * @param orders 订单集合
+     */
     public void saveAll(Collection<OrderEntity> orders) {
         if (orders.isEmpty()) {
             return;

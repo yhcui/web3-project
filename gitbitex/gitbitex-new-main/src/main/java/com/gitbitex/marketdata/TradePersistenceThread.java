@@ -22,12 +22,26 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 成交持久化线程
+ * 负责消费成交消息并持久化到数据库
+ */
 @Slf4j
 public class TradePersistenceThread extends KafkaConsumerThread<String, Message> implements ConsumerRebalanceListener {
+    /** 成交管理器 */
     private final TradeManager tradeManager;
+    /** 应用配置 */
     private final AppProperties appProperties;
+    /** 成交 Redis 主题 */
     private final RTopic tradeTopic;
 
+    /**
+     * 构造成交持久化线程
+     * @param consumer Kafka 消费者
+     * @param tradeManager 成交管理器
+     * @param redissonClient Redisson 客户端
+     * @param appProperties 应用配置
+     */
     public TradePersistenceThread(KafkaConsumer<String, Message> consumer, TradeManager tradeManager,
                                   RedissonClient redissonClient,
                                   AppProperties appProperties) {
@@ -37,21 +51,35 @@ public class TradePersistenceThread extends KafkaConsumerThread<String, Message>
         this.tradeTopic = redissonClient.getTopic("trade", StringCodec.INSTANCE);
     }
 
+    /**
+     * 分区撤销时的回调
+     * @param collection 撤销的分区集合
+     */
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> collection) {
 
     }
 
+    /**
+     * 分区分配时的回调
+     * @param collection 分配的分区集合
+     */
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> collection) {
 
     }
 
+    /**
+     * 执行订阅操作
+     */
     @Override
     protected void doSubscribe() {
         consumer.subscribe(Collections.singletonList(appProperties.getMatchingEngineMessageTopic()), this);
     }
 
+    /**
+     * 执行轮询操作，消费并处理成交消息
+     */
     @Override
     protected void doPoll() {
         var records = consumer.poll(Duration.ofSeconds(5));
@@ -69,6 +97,11 @@ public class TradePersistenceThread extends KafkaConsumerThread<String, Message>
         consumer.commitAsync();
     }
 
+    /**
+     * 将成交消息转换为成交实体
+     * @param message 成交消息
+     * @return 成交实体
+     */
     private TradeEntity tradeEntity(TradeMessage message) {
         Trade trade = message.getTrade();
         TradeEntity tradeEntity = new TradeEntity();

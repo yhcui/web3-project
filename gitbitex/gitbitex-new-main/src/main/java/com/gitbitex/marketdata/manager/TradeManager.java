@@ -8,12 +8,20 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 
+/**
+ * 交易管理器
+ * 负责交易数据的保存
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class TradeManager {
     private final TradeRepository tradeRepository;
 
+    /**
+     * 批量保存交易
+     * @param trades 交易集合
+     */
     public void saveAll(Collection<TradeEntity> trades) {
         if (trades.isEmpty()) {
             return;

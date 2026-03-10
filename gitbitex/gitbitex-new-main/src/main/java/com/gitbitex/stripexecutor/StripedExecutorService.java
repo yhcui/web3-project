@@ -26,22 +26,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * The StripedExecutorService accepts Runnable/Callable objects
- * that also implement the StripedObject interface.  It executes
- * all the tasks for a single "stripe" consecutively.
- * <p/>
- * In this version, submitted tasks do not necessarily have to
- * implement the StripedObject interface.  If they do not, then
- * they will simply be passed onto the wrapped ExecutorService
- * directly.
- * <p/>
- * Idea inspired by Glenn McGregor on the Concurrency-interest
- * mailing list and using the SerialExecutor presented in the
- * Executor interface's JavaDocs.
- * <p/>
- * http://cs.oswego.edu/mailman/listinfo/concurrency-interest
- *
- * @author Dr Heinz M. Kabutz
+ * 条纹执行器服务
+ * 接受实现 StripedObject 接口的任务，确保同一"条纹"的任务按顺序执行
+ * 非 StripedObject 任务将直接提交给底层 ExecutorService 执行
  */
 public class StripedExecutorService extends AbstractExecutorService {
     /**

@@ -22,12 +22,26 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 账户持久化线程
+ * 负责消费账户消息并持久化到数据库
+ */
 @Slf4j
 public class AccountPersistenceThread extends KafkaConsumerThread<String, Message> implements ConsumerRebalanceListener {
+    /** 账户管理器 */
     private final AccountManager accountManager;
+    /** 应用配置 */
     private final AppProperties appProperties;
+    /** 账户 Redis 主题 */
     private final RTopic accountTopic;
 
+    /**
+     * 构造账户持久化线程
+     * @param consumer Kafka 消费者
+     * @param accountManager 账户管理器
+     * @param redissonClient Redisson 客户端
+     * @param appProperties 应用配置
+     */
     public AccountPersistenceThread(KafkaConsumer<String, Message> consumer, AccountManager accountManager,
                                     RedissonClient redissonClient,
                                     AppProperties appProperties) {
@@ -37,21 +51,35 @@ public class AccountPersistenceThread extends KafkaConsumerThread<String, Messag
         this.accountTopic = redissonClient.getTopic("account", StringCodec.INSTANCE);
     }
 
+    /**
+     * 分区撤销时的回调
+     * @param collection 撤销的分区集合
+     */
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> collection) {
 
     }
 
+    /**
+     * 分区分配时的回调
+     * @param collection 分配的分区集合
+     */
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> collection) {
 
     }
 
+    /**
+     * 执行订阅操作
+     */
     @Override
     protected void doSubscribe() {
         consumer.subscribe(Collections.singletonList(appProperties.getMatchingEngineMessageTopic()), this);
     }
 
+    /**
+     * 执行轮询操作，消费并处理账户消息
+     */
     @Override
     protected void doPoll() {
         var records = consumer.poll(Duration.ofSeconds(5));
@@ -69,6 +97,11 @@ public class AccountPersistenceThread extends KafkaConsumerThread<String, Messag
         consumer.commitAsync();
     }
 
+    /**
+     * 将账户消息转换为账户实体
+     * @param message 账户消息
+     * @return 账户实体
+     */
     private AccountEntity accountEntity(AccountMessage message) {
         Account account = message.getAccount();
         AccountEntity accountEntity = new AccountEntity();

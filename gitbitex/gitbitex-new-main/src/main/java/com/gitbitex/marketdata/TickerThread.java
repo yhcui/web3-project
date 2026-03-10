@@ -22,12 +22,25 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 行情 Ticker 线程
+ * 负责消费成交消息并生成 Ticker 行情数据
+ */
 @Slf4j
 public class TickerThread extends KafkaConsumerThread<String, Message> implements ConsumerRebalanceListener {
+    /** 应用配置 */
     private final AppProperties appProperties;
+    /** Ticker 管理器 */
     private final TickerManager tickerManager;
+    /** 按交易对存储的 Ticker 映射 */
     private final Map<String, Ticker> tickerByProductId = new HashMap<>();
 
+    /**
+     * 构造 Ticker 线程
+     * @param consumer Kafka 消费者
+     * @param tickerManager Ticker 管理器
+     * @param appProperties 应用配置
+     */
     public TickerThread(KafkaConsumer<String, Message> consumer, TickerManager tickerManager,
                         AppProperties appProperties) {
         super(consumer, logger);
@@ -35,6 +48,10 @@ public class TickerThread extends KafkaConsumerThread<String, Message> implement
         this.appProperties = appProperties;
     }
 
+    /**
+     * 分区撤销时的回调
+     * @param partitions 撤销的分区集合
+     */
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
         for (TopicPartition partition : partitions) {
@@ -42,6 +59,10 @@ public class TickerThread extends KafkaConsumerThread<String, Message> implement
         }
     }
 
+    /**
+     * 分区分配时的回调
+     * @param partitions 分配的分区集合
+     */
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
         for (TopicPartition partition : partitions) {
@@ -49,11 +70,17 @@ public class TickerThread extends KafkaConsumerThread<String, Message> implement
         }
     }
 
+    /**
+     * 执行订阅操作
+     */
     @Override
     protected void doSubscribe() {
         consumer.subscribe(Collections.singletonList(appProperties.getMatchingEngineMessageTopic()), this);
     }
 
+    /**
+     * 执行轮询操作，消费成交消息并更新 Ticker
+     */
     @Override
     protected void doPoll() {
         var records = consumer.poll(Duration.ofSeconds(5));
@@ -71,6 +98,10 @@ public class TickerThread extends KafkaConsumerThread<String, Message> implement
         consumer.commitSync();
     }
 
+    /**
+     * 刷新 Ticker 数据
+     * @param trade 成交信息
+     */
     public void refreshTicker(Trade trade) {
         Ticker ticker = tickerByProductId.get(trade.getProductId());
         if (ticker == null) {

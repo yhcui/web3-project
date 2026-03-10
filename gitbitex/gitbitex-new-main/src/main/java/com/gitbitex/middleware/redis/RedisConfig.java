@@ -10,12 +10,21 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Redis 配置类
+ * 配置 Redisson 客户端
+ */
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties(RedisProperties.class)
 @ConditionalOnClass(RedissonClient.class)
 public class RedisConfig {
 
+    /**
+     * 创建 Redisson 客户端
+     * @param redisProperties Redis 配置属性
+     * @return Redisson 客户端
+     */
     @Bean(destroyMethod = "shutdown")
     public RedissonClient redissonClient(RedisProperties redisProperties) {
         Config config = new Config();

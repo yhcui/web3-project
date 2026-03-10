@@ -8,25 +8,22 @@ import org.slf4j.Logger;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * https://kafka.apache.org/23/javadoc/index.html?org/apache/kafka/clients/consumer/KafkaConsumer.html
- * <p>
- * Multi-threaded Processing
- * The Kafka consumer is NOT thread-safe. All network I/O happens in the thread of the application making the call.
- * It is the responsibility of the user to ensure that multi-threaded access is properly synchronized.
- * Un-synchronized access will result in ConcurrentModificationException.
- * The only exception to this rule is wakeup(), which can safely be used from an external thread to interrupt an
- * active operation. In this case, a WakeupException will be thrown from the thread blocking on the operation. This
- * can be used to shutdown the consumer from another thread. The following snippet shows the typical pattern:
- *
- * @param <K>
- * @param <V>
+ * Kafka 消费者线程基类
+ * 提供 Kafka 消费的模板方法，子类需实现订阅和消息处理逻辑
+ * @param <K> 键类型
+ * @param <V> 值类型
  */
 @RequiredArgsConstructor
 public abstract class KafkaConsumerThread<K, V> extends Thread {
+    /** Kafka 消费者 */
     protected final KafkaConsumer<K, V> consumer;
     private final AtomicBoolean closed = new AtomicBoolean();
+    /** 日志记录器 */
     private final Logger logger;
 
+    /**
+     * 线程运行方法
+     */
     @Override
     public void run() {
         logger.info("starting...");
@@ -51,18 +48,30 @@ public abstract class KafkaConsumerThread<K, V> extends Thread {
         logger.info("exiting...");
     }
 
+    /**
+     * 关闭消费者
+     */
     public void shutdown() {
         closed.set(true);
         consumer.wakeup();
     }
 
+    /**
+     * 中断线程
+     */
     @Override
     public void interrupt() {
         this.shutdown();
         super.interrupt();
     }
 
+    /**
+     * 订阅主题
+     */
     protected abstract void doSubscribe();
 
+    /**
+     * 消费消息
+     */
     protected abstract void doPoll();
 }

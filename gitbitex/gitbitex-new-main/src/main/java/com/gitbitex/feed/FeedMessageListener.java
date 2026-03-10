@@ -17,15 +17,25 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * Feed 消息监听器
+ * 监听 Redis 消息主题，将撮合引擎产生的消息推送给 WebSocket 客户端
+ */
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class FeedMessageListener {
+    /** Redis 客户端 */
     private final RedissonClient redissonClient;
+    /** 会话管理器 */
     private final SessionManager sessionManager;
+    /** 回调执行器 */
     private final StripedExecutorService callbackExecutor =
             new StripedExecutorService(Runtime.getRuntime().availableProcessors());
 
+    /**
+     * 初始化，订阅各种消息主题
+     */
     @PostConstruct
     public void run() {
         redissonClient.getTopic("order", StringCodec.INSTANCE).addListener(String.class, (c, msg) -> {
@@ -99,6 +109,11 @@ public class FeedMessageListener {
         });
     }
 
+    /**
+     * 转换订单收到消息为 Feed 消息
+     * @param log 订单收到消息
+     * @return Feed 消息
+     */
     private OrderReceivedFeedMessage orderReceivedMessage(OrderReceivedMessage log) {
         OrderReceivedFeedMessage message = new OrderReceivedFeedMessage();
         message.setProductId(log.getProductId());
@@ -113,6 +128,11 @@ public class FeedMessageListener {
         return message;
     }
 
+    /**
+     * 转换成交消息为 Feed 消息
+     * @param tradeMessage 成交消息
+     * @return Feed 消息
+     */
     private OrderMatchFeedMessage matchMessage(TradeMessage tradeMessage) {
         Trade trade = tradeMessage.getTrade();
         OrderMatchFeedMessage message = new OrderMatchFeedMessage();
@@ -128,6 +148,11 @@ public class FeedMessageListener {
         return message;
     }
 
+    /**
+     * 转换订单开放消息为 Feed 消息
+     * @param log 订单开放消息
+     * @return Feed 消息
+     */
     private OrderOpenFeedMessage orderOpenMessage(OrderOpenMessage log) {
         OrderOpenFeedMessage message = new OrderOpenFeedMessage();
         message.setSequence(log.getSequence());
@@ -139,6 +164,11 @@ public class FeedMessageListener {
         return message;
     }
 
+    /**
+     * 转换订单完成消息为 Feed 消息
+     * @param log 订单完成消息
+     * @return Feed 消息
+     */
     private OrderDoneFeedMessage orderDoneMessage(OrderDoneMessage log) {
         OrderDoneFeedMessage message = new OrderDoneFeedMessage();
         message.setSequence(log.getSequence());
@@ -155,6 +185,11 @@ public class FeedMessageListener {
         return message;
     }
 
+    /**
+     * 转换 K 线数据为 Feed 消息
+     * @param candle K 线数据
+     * @return Feed 消息
+     */
     private CandleFeedMessage candleMessage(Candle candle) {
         CandleFeedMessage message = new CandleFeedMessage();
         message.setProductId(candle.getProductId());
@@ -168,6 +203,11 @@ public class FeedMessageListener {
         return message;
     }
 
+    /**
+     * 转换订单消息为 Feed 消息
+     * @param orderMessage 订单消息
+     * @return Feed 消息
+     */
     private OrderFeedMessage orderFeedMessage(OrderMessage orderMessage) {
         Order order = orderMessage.getOrder();
         OrderFeedMessage message = new OrderFeedMessage();
@@ -188,6 +228,11 @@ public class FeedMessageListener {
         return message;
     }
 
+    /**
+     * 转换账户消息为 Feed 消息
+     * @param accountMessage 账户消息
+     * @return Feed 消息
+     */
     private AccountFeedMessage accountFeedMessage(AccountMessage accountMessage) {
         Account account = accountMessage.getAccount();
         AccountFeedMessage accountFeedMessage = new AccountFeedMessage();
@@ -198,6 +243,11 @@ public class FeedMessageListener {
         return accountFeedMessage;
     }
 
+    /**
+     * 转换行情消息为 Feed 消息
+     * @param ticker 行情消息
+     * @return Feed 消息
+     */
     private TickerFeedMessage tickerFeedMessage(TickerMessage ticker) {
         TickerFeedMessage tickerFeedMessage = new TickerFeedMessage();
         tickerFeedMessage.setProductId(ticker.getProductId());

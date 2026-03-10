@@ -23,14 +23,24 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 
 /**
- * My job is to produce candles
+ * K 线生成线程
+ * 负责消费成交消息并生成 K 线数据
  */
 @Slf4j
 public class CandleMakerThread extends KafkaConsumerThread<String, Message> implements ConsumerRebalanceListener {
+    /** 支持的 K 线粒度（分钟） */
     private static final int[] GRANULARITY_ARR = new int[]{1, 5, 15, 30, 60, 360, 1440};
+    /** K 线仓库 */
     private final CandleRepository candleRepository;
+    /** 应用配置 */
     private final AppProperties appProperties;
 
+    /**
+     * 构造 K 线生成线程
+     * @param consumer Kafka 消费者
+     * @param candleRepository K 线仓库
+     * @param appProperties 应用配置
+     */
     public CandleMakerThread(KafkaConsumer<String, Message> consumer, CandleRepository candleRepository,
                              AppProperties appProperties) {
         super(consumer, logger);
@@ -38,6 +48,10 @@ public class CandleMakerThread extends KafkaConsumerThread<String, Message> impl
         this.appProperties = appProperties;
     }
 
+    /**
+     * 分区撤销时的回调
+     * @param partitions 撤销的分区集合
+     */
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
         for (TopicPartition partition : partitions) {
@@ -45,6 +59,10 @@ public class CandleMakerThread extends KafkaConsumerThread<String, Message> impl
         }
     }
 
+    /**
+     * 分区分配时的回调
+     * @param partitions 分配的分区集合
+     */
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
         for (TopicPartition partition : partitions) {
@@ -52,11 +70,17 @@ public class CandleMakerThread extends KafkaConsumerThread<String, Message> impl
         }
     }
 
+    /**
+     * 执行订阅操作
+     */
     @Override
     protected void doSubscribe() {
         consumer.subscribe(Collections.singletonList(appProperties.getMatchingEngineMessageTopic()), this);
     }
 
+    /**
+     * 执行轮询操作，消费成交消息并生成 K 线
+     */
     @Override
     @SneakyThrows
     protected void doPoll() {

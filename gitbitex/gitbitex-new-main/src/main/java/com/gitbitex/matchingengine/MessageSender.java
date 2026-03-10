@@ -13,19 +13,35 @@ import org.springframework.stereotype.Component;
 
 import java.util.Properties;
 
+/**
+ * 消息发送器
+ * 负责将撮合引擎产生的消息发送到 Kafka
+ */
 @Slf4j
 @Component
 public class MessageSender {
+    /** 应用配置 */
     private final AppProperties appProperties;
+    /** Kafka 配置 */
     private final KafkaProperties kafkaProperties;
+    /** Kafka 生产者 */
     private final KafkaProducer<String, Message> kafkaProducer;
 
+    /**
+     * 构造发送器
+     * @param appProperties 应用配置
+     * @param kafkaProperties Kafka 配置
+     */
     public MessageSender(AppProperties appProperties, KafkaProperties kafkaProperties) {
         this.appProperties = appProperties;
         this.kafkaProperties = kafkaProperties;
         this.kafkaProducer = kafkaProducer();
     }
 
+    /**
+     * 发送消息
+     * @param message 撮合引擎消息
+     */
     public void send(Message message) {
         ProducerRecord<String, Message> record = new ProducerRecord<>(appProperties.getMatchingEngineMessageTopic(), message);
         kafkaProducer.send(record);

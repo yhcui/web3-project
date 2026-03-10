@@ -24,20 +24,38 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+/**
+ * WebSocket 会话管理器
+ * 管理客户端连接会话，处理订阅/取消订阅、消息推送等功能
+ */
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class SessionManager {
+    /** 频道对应的会话 ID 映射 */
     private final ConcurrentHashMap<String, ConcurrentSkipListSet<String>> sessionIdsByChannel
             = new ConcurrentHashMap<>();
+    /** 会话 ID 对应的频道映射 */
     private final ConcurrentHashMap<String, ConcurrentSkipListSet<String>> channelsBySessionId
             = new ConcurrentHashMap<>();
+    /** 会话 ID 对应的 WebSocket 会话映射 */
     private final ConcurrentHashMap<String, WebSocketSession> sessionById = new ConcurrentHashMap<>();
+    /** 订单簿快照管理器 */
     private final OrderBookSnapshotManager orderBookSnapshotManager;
+    /** 行情管理器 */
     private final TickerManager tickerManager;
+    /** 消息发送执行器 */
     private final StripedExecutorService messageSenderExecutor =
             new StripedExecutorService(Runtime.getRuntime().availableProcessors());
 
+    /**
+     * 订阅或取消订阅频道
+     * @param session WebSocket 会话
+     * @param productIds 产品 ID 列表
+     * @param currencies 币种列表
+     * @param channels 频道列表
+     * @param isSub 是否订阅
+     */
     @SneakyThrows
     public void subOrUnSub(WebSocketSession session, List<String> productIds, List<String> currencies,
                            List<String> channels, boolean isSub) {
@@ -119,6 +137,11 @@ public class SessionManager {
         }
     }
 
+    /**
+     * 向指定频道的所有会话广播消息
+     * @param channel 频道名称
+     * @param message 消息内容
+     */
     public void broadcast(String channel, Object message) {
         Set<String> sessionIds = sessionIdsByChannel.get(channel);
         if (sessionIds == null || sessionIds.isEmpty()) {
@@ -144,6 +167,11 @@ public class SessionManager {
         });
     }
 
+    /**
+     * 发送 L2 订单簿快照
+     * @param session WebSocket 会话
+     * @param productId 产品 ID
+     */
     private void sendL2OrderBookSnapshot(WebSocketSession session, String productId) {
         messageSenderExecutor.execute(session.getId(), () -> {
             try {
@@ -157,6 +185,11 @@ public class SessionManager {
         });
     }
 
+    /**
+     * 发送 L2 订单簿数据
+     * @param session WebSocket 会话
+     * @param l2OrderBook L2 订单簿
+     */
     private void doSendL2OrderBook(WebSocketSession session, L2OrderBook l2OrderBook) throws IOException {
         String key = "LAST_L2_ORDER_BOOK:" + l2OrderBook.getProductId();
 
@@ -182,6 +215,11 @@ public class SessionManager {
         session.getAttributes().put(key, l2OrderBook);
     }
 
+    /**
+     * 发送行情数据
+     * @param session WebSocket 会话
+     * @param productId 产品 ID
+     */
     private void sendTicker(WebSocketSession session, String productId) {
         messageSenderExecutor.execute(session.getId(), () -> {
             try {
@@ -195,6 +233,10 @@ public class SessionManager {
         });
     }
 
+    /**
+     * 发送心跳响应
+     * @param session WebSocket 会话
+     */
     public void sendPong(WebSocketSession session) {
         messageSenderExecutor.execute(session.getId(), () -> {
             try {
@@ -207,6 +249,11 @@ public class SessionManager {
         });
     }
 
+    /**
+     * 发送 JSON 消息
+     * @param session WebSocket 会话
+     * @param msg 消息对象
+     */
     private void doSendJson(WebSocketSession session, Object msg) {
         try {
             session.sendMessage(new TextMessage(JSON.toJSONString(msg)));
@@ -215,6 +262,11 @@ public class SessionManager {
         }
     }
 
+    /**
+     * 订阅频道
+     * @param session WebSocket 会话
+     * @param channel 频道名称
+     */
     private void subscribeChannel(WebSocketSession session, String channel) {
         sessionIdsByChannel
                 .computeIfAbsent(channel, k -> new ConcurrentSkipListSet<>())
@@ -224,6 +276,11 @@ public class SessionManager {
         sessionById.put(session.getId(), session);
     }
 
+    /**
+     * 取消订阅频道
+     * @param session WebSocket 会话
+     * @param channel 频道名称
+     */
     public void unsubscribeChannel(WebSocketSession session, String channel) {
         if (sessionIdsByChannel.containsKey(channel)) {
             sessionIdsByChannel.get(channel).remove(session.getId());
@@ -234,6 +291,10 @@ public class SessionManager {
         });
     }
 
+    /**
+     * 移除会话
+     * @param session WebSocket 会话
+     */
     public void removeSession(WebSocketSession session) {
         ConcurrentSkipListSet<String> channels = channelsBySessionId.remove(session.getId());
         if (channels != null) {
@@ -247,6 +308,11 @@ public class SessionManager {
         sessionById.remove(session.getId());
     }
 
+    /**
+     * 获取当前会话的用户 ID
+     * @param session WebSocket 会话
+     * @return 用户 ID
+     */
     public String getUserId(WebSocketSession session) {
         Object val = session.getAttributes().get("CURRENT_USER_ID");
         return val != null ? val.toString() : null;

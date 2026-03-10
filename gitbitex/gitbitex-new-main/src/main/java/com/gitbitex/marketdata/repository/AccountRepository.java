@@ -11,6 +11,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * 账户数据仓库
+ * 负责账户数据的持久化操作
+ */
 @Component
 public class AccountRepository {
     private final MongoCollection<AccountEntity> collection;
@@ -20,12 +24,21 @@ public class AccountRepository {
         this.collection.createIndex(Indexes.descending("userId", "currency"), new IndexOptions().unique(true));
     }
 
+    /**
+     * 根据用户 ID 查询账户列表
+     * @param userId 用户 ID
+     * @return 账户列表
+     */
     public List<AccountEntity> findAccountsByUserId(String userId) {
         return collection
                 .find(Filters.eq("userId", userId))
                 .into(new ArrayList<>());
     }
 
+    /**
+     * 批量保存账户
+     * @param accounts 账户集合
+     */
     public void saveAll(Collection<AccountEntity> accounts) {
         List<WriteModel<AccountEntity>> writeModels = new ArrayList<>();
         for (AccountEntity item : accounts) {

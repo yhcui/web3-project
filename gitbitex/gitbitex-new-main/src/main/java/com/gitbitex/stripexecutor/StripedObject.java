@@ -19,13 +19,14 @@
 package com.gitbitex.stripexecutor;
 
 /**
- * Used to indicate which "stripe" this Runnable or Callable belongs to.  The
- * stripe is determined by the identity of the object, rather than its hash
- * code and equals.
- *
- * @author Dr Heinz M. Kabutz
- * @see StripedExecutorService
+ * 条纹对象接口
+ * 用于标识需要按条纹（分组）顺序执行的任务
+ * 条纹由对象的标识决定，而非 hashCode 和 equals
  */
 public interface StripedObject {
+    /**
+     * 获取条纹标识
+     * @return 条纹标识对象
+     */
     Object getStripe();
 }

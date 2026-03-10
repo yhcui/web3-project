@@ -22,14 +22,30 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 订单簿快照线程
+ * 负责消费订单消息并生成订单簿快照
+ */
 @Slf4j
 public class OrderBookSnapshotThread extends KafkaConsumerThread<String, Message> implements ConsumerRebalanceListener {
+    /** 订单簿映射 */
     private final ConcurrentHashMap<String, OrderBook> orderBooks = new ConcurrentHashMap<>();
+    /** L2 订单簿映射 */
     private final ConcurrentHashMap<String, L2OrderBook> l2OrderBooks = new ConcurrentHashMap<>();
+    /** 订单簿快照管理器 */
     private final OrderBookSnapshotManager orderBookSnapshotManager;
+    /** 引擎快照管理器 */
     private final EngineSnapshotManager stateStore;
+    /** 应用配置 */
     private final AppProperties appProperties;
 
+    /**
+     * 构造订单簿快照线程
+     * @param consumer Kafka 消费者
+     * @param orderBookSnapshotManager 订单簿快照管理器
+     * @param engineSnapshotManager 引擎快照管理器
+     * @param appProperties 应用配置
+     */
     public OrderBookSnapshotThread(KafkaConsumer<String, Message> consumer,
                                    OrderBookSnapshotManager orderBookSnapshotManager,
                                    EngineSnapshotManager engineSnapshotManager,
@@ -40,11 +56,20 @@ public class OrderBookSnapshotThread extends KafkaConsumerThread<String, Message
         this.appProperties = appProperties;
     }
 
+    /**
+     * 分区撤销时的回调
+     * @param collection 撤销的分区集合
+     */
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> collection) {
 
     }
 
+    /**
+     * 分区分配时的回调
+     * 从引擎状态恢复订单簿
+     * @param partitions 分配的分区集合
+     */
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
         // restore order book from engine state
@@ -65,11 +90,17 @@ public class OrderBookSnapshotThread extends KafkaConsumerThread<String, Message
         });
     }
 
+    /**
+     * 执行订阅操作
+     */
     @Override
     protected void doSubscribe() {
         consumer.subscribe(Collections.singletonList(appProperties.getMatchingEngineMessageTopic()), this);
     }
 
+    /**
+     * 执行轮询操作，消费订单消息并生成快照
+     */
     @Override
     protected void doPoll() {
         var records = consumer.poll(Duration.ofSeconds(5));
@@ -99,6 +130,11 @@ public class OrderBookSnapshotThread extends KafkaConsumerThread<String, Message
         });
     }
 
+    /**
+     * 获取指定交易对的订单簿
+     * @param productId 交易对 ID
+     * @return 订单簿
+     */
     private OrderBook getOrderBook(String productId) {
         OrderBook orderBook = orderBooks.get(productId);
         if (orderBook == null) {
@@ -108,6 +144,10 @@ public class OrderBookSnapshotThread extends KafkaConsumerThread<String, Message
         return orderBook;
     }
 
+    /**
+     * 生成 L2 订单簿快照
+     * @param orderBook 订单簿
+     */
     private void takeL2OrderBookSnapshot(OrderBook orderBook) {
         logger.info("taking level2 order book snapshot: sequence={}", orderBook.getSequence());
         L2OrderBook l2OrderBook = new L2OrderBook(orderBook, 25);

@@ -12,20 +12,38 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+/**
+ * WebSocket 文本消息处理器
+ * 处理客户端发送的订阅、取消订阅、心跳等消息
+ */
 @Component
 @RequiredArgsConstructor
 public class FeedTextWebSocketHandler extends TextWebSocketHandler {
     private final SessionManager sessionManager;
 
+    /**
+     * 连接建立后处理
+     * @param session WebSocket 会话
+     */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
     }
 
+    /**
+     * 连接关闭后处理
+     * @param session WebSocket 会话
+     * @param status 关闭状态
+     */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessionManager.removeSession(session);
     }
 
+    /**
+     * 处理文本消息
+     * @param session WebSocket 会话
+     * @param message 文本消息
+     */
     @Override
     @SneakyThrows
     public void handleTextMessage(WebSocketSession session, TextMessage message) {

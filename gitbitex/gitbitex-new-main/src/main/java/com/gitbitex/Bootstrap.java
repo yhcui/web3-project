@@ -29,24 +29,43 @@ import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ * GitBitEx 应用启动引导类
+ * 负责启动所有核心线程，包括撮合引擎、数据持久化、K 线生成、行情推送等
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class Bootstrap {
     private final OrderManager orderManager;
+    /** 账户管理器 */
     private final AccountManager accountManager;
+    /** 交易管理器 */
     private final TradeManager tradeManager;
+    /** K 线数据仓库 */
     private final CandleRepository candleRepository;
+    /** 行情管理器 */
     private final TickerManager tickerManager;
+    /** 应用配置 */
     private final AppProperties appProperties;
+    /** Kafka 配置 */
     private final KafkaProperties kafkaProperties;
+    /** 撮合引擎快照管理器 */
     private final EngineSnapshotManager engineSnapshotManager;
+    /** 撮合引擎加载器 */
     private final MatchingEngineLoader matchingEngineLoader;
+    /** 消息发送器 */
     private final MessageSender messageSender;
+    /** 订单簿快照管理器 */
     private final OrderBookSnapshotManager orderBookSnapshotManager;
+    /** Redis 客户端 */
     private final RedissonClient redissonClient;
+    /** 定时执行器 */
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(8);
 
+    /**
+     * 初始化方法，启动所有核心线程
+     */
     @PostConstruct
     public void init() {
         startMatchingEngine(1);
@@ -59,6 +78,10 @@ public class Bootstrap {
         startOrderBookSnapshotThread(1);
     }
 
+    /**
+     * 启动撮合引擎线程
+     * @param nThreads 线程数量
+     */
     private void startMatchingEngine(int nThreads) {
         for (int i = 0; i < nThreads; i++) {
             String groupId = "MatchingEngine";
@@ -70,6 +93,10 @@ public class Bootstrap {
         }
     }
 
+    /**
+     * 启动引擎快照线程
+     * @param nThreads 线程数量
+     */
     private void startSnapshotThread(int nThreads) {
         for (int i = 0; i < nThreads; i++) {
             String groupId = "EngineSnapshot";
@@ -81,6 +108,10 @@ public class Bootstrap {
         }
     }
 
+    /**
+     * 启动订单簿快照线程
+     * @param nThreads 线程数量
+     */
     private void startOrderBookSnapshotThread(int nThreads) {
         for (int i = 0; i < nThreads; i++) {
             String groupId = "OrderBookSnapshot";
@@ -94,6 +125,10 @@ public class Bootstrap {
         }
     }
 
+    /**
+     * 启动账户持久化线程
+     * @param nThreads 线程数量
+     */
     private void startAccountPersistenceThread(int nThreads) {
         for (int i = 0; i < nThreads; i++) {
             String groupId = "Account";
@@ -107,6 +142,10 @@ public class Bootstrap {
         }
     }
 
+    /**
+     * 启动行情推送线程
+     * @param nThreads 线程数量
+     */
     private void startTickerThread(int nThreads) {
         for (int i = 0; i < nThreads; i++) {
             String groupId = "Ticker";
@@ -118,6 +157,10 @@ public class Bootstrap {
         }
     }
 
+    /**
+     * 启动订单持久化线程
+     * @param nThreads 线程数量
+     */
     private void startOrderPersistenceThread(int nThreads) {
         for (int i = 0; i < nThreads; i++) {
             String groupId = "Order";
@@ -130,6 +173,10 @@ public class Bootstrap {
         }
     }
 
+    /**
+     * 启动 K 线生成线程
+     * @param nThreads 线程数量
+     */
     private void startCandleMaker(int nThreads) {
         for (int i = 0; i < nThreads; i++) {
             String groupId = "CandlerMaker";
@@ -141,6 +188,10 @@ public class Bootstrap {
         }
     }
 
+    /**
+     * 启动交易持久化线程
+     * @param nThreads 线程数量
+     */
     private void startTradePersistenceThread(int nThreads) {
         for (int i = 0; i < nThreads; i++) {
             String groupId = "Trade1";
@@ -153,6 +204,11 @@ public class Bootstrap {
         }
     }
 
+    /**
+     * 获取线程异常处理器
+     * @param runnable 异常时执行的恢复逻辑
+     * @return 异常处理器
+     */
     private Thread.UncaughtExceptionHandler getUncaughtExceptionHandler(Runnable runnable) {
         return (t, ex) -> {
             logger.error("Thread {} triggered an uncaught exception and will start a new thread in " +
@@ -167,15 +223,30 @@ public class Bootstrap {
         };
     }
 
+    /**
+     * 创建 Kafka 消息消费者（用于接收撮合引擎消息）
+     * @param groupId 消费者组 ID
+     * @return Kafka 消费者
+     */
     private KafkaConsumer<String, Message> getEngineMessageKafkaConsumer(String groupId) {
         return new KafkaConsumer<>(getProperties(groupId), new StringDeserializer(),
                 new MatchingEngineMessageDeserializer());
     }
 
+    /**
+     * 创建 Kafka 命令消费者（用于接收撮合引擎命令）
+     * @param groupId 消费者组 ID
+     * @return Kafka 消费者
+     */
     private KafkaConsumer<String, Command> getEngineCommandKafkaConsumer(String groupId) {
         return new KafkaConsumer<>(getProperties(groupId), new StringDeserializer(), new CommandDeserializer());
     }
 
+    /**
+     * 获取 Kafka 消费者配置
+     * @param groupId 消费者组 ID
+     * @return 配置属性
+     */
     private Properties getProperties(String groupId) {
         Properties properties = new Properties();
         properties.put("bootstrap.servers", kafkaProperties.getBootstrapServers());

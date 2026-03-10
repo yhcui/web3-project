@@ -3,15 +3,20 @@ package com.gitbitex.marketdata.util;
 import java.time.ZonedDateTime;
 import java.time.temporal.TemporalField;
 
+/**
+ * 日期工具类
+ * 提供日期时间舍入等工具方法
+ */
 public class DateUtil {
     /**
-     * https://stackoverflow.com/questions/3553964/how-to-round-time-to-the-nearest-quarter-hour-in-java/37423588
+     * 将 ZonedDateTime 舍入到指定的时间单位
+     * 参考：https://stackoverflow.com/questions/3553964/how-to-round-time-to-the-nearest-quarter-hour-in-java/37423588
      * #37423588
      *
-     * @param input
-     * @param roundTo
-     * @param roundIncrement
-     * @return
+     * @param input 输入时间
+     * @param roundTo 舍入字段
+     * @param roundIncrement 舍入增量
+     * @return 舍入后的时间
      */
     public static ZonedDateTime round(ZonedDateTime input, TemporalField roundTo, int roundIncrement) {
         /* Extract the field being rounded. */

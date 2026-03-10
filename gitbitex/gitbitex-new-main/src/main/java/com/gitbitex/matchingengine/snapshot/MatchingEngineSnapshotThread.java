@@ -19,15 +19,31 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 撮合引擎快照线程
+ * 负责消费撮合引擎消息，定期保存引擎状态快照
+ */
 @Slf4j
 public class MatchingEngineSnapshotThread extends KafkaConsumerThread<String, Message> implements ConsumerRebalanceListener {
+    /** 引擎快照管理器 */
     private final EngineSnapshotManager engineSnapshotManager;
+    /** 应用配置 */
     private final AppProperties appProperties;
+    /** 账户缓存 */
     private final Map<String, Account> accounts = new HashMap<>();
+    /** 订单缓存 */
     private final Map<String, Order> orders = new HashMap<>();
+    /** 交易对缓存 */
     private final Map<String, Product> products = new HashMap<>();
+    /** 引擎状态 */
     private EngineState engineState;
 
+    /**
+     * 构造快照线程
+     * @param consumer Kafka 消费者
+     * @param engineSnapshotManager 引擎快照管理器
+     * @param appProperties 应用配置
+     */
     public MatchingEngineSnapshotThread(KafkaConsumer<String, Message> consumer,
                                         EngineSnapshotManager engineSnapshotManager, AppProperties appProperties) {
         super(consumer, logger);
@@ -35,11 +51,20 @@ public class MatchingEngineSnapshotThread extends KafkaConsumerThread<String, Me
         this.appProperties = appProperties;
     }
 
+    /**
+     * 分区撤销时的回调
+     * @param collection 撤销的分区集合
+     */
     @Override
     public void onPartitionsRevoked(Collection<TopicPartition> collection) {
 
     }
 
+    /**
+     * 分区分配时的回调
+     * 加载引擎状态并定位到上次的消费位置
+     * @param partitions 分配的分区集合
+     */
     @Override
     public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
         engineSnapshotManager.runInSession(session -> {
@@ -57,11 +82,17 @@ public class MatchingEngineSnapshotThread extends KafkaConsumerThread<String, Me
         }
     }
 
+    /**
+     * 执行订阅操作
+     */
     @Override
     protected void doSubscribe() {
         consumer.subscribe(Collections.singletonList(appProperties.getMatchingEngineMessageTopic()), this);
     }
 
+    /**
+     * 执行轮询操作，消费并处理消息
+     */
     @Override
     protected void doPoll() {
         var records = consumer.poll(Duration.ofSeconds(5));
@@ -108,11 +139,17 @@ public class MatchingEngineSnapshotThread extends KafkaConsumerThread<String, Me
         }
     }
 
+    /**
+     * 保存状态到数据库
+     */
     private void saveState() {
         engineSnapshotManager.save(engineState, accounts.values(), orders.values(), products.values());
         cleanBuffers();
     }
 
+    /**
+     * 清空缓存
+     */
     private void cleanBuffers() {
         accounts.clear();
         orders.clear();

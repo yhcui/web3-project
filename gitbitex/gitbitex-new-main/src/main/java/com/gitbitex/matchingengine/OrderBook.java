@@ -16,21 +16,47 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * 订单簿类
+ * 撮合引擎核心组件，负责订单的撮合成交
+ */
 @Getter
 @Slf4j
 public class OrderBook {
+    /** 交易对 ID */
     private final String productId;
+    /** 交易对簿 */
     private final ProductBook productBook;
+    /** 账户簿 */
     private final AccountBook accountBook;
+    /** 卖单深度 */
     private final Depth asks = new Depth(Comparator.naturalOrder());
+    /** 买单深度 */
     private final Depth bids = new Depth(Comparator.reverseOrder());
+    /** 订单 ID 映射 */
     private final Map<String, Order> orderById = new HashMap<>();
+    /** 消息发送器 */
     private final MessageSender messageSender;
+    /** 消息序列号计数器 */
     private final AtomicLong messageSequence;
+    /** 订单序列号 */
     private long orderSequence;
+    /** 成交序列号 */
     private long tradeSequence;
+    /** 订单簿序列号 */
     private long orderBookSequence;
 
+    /**
+     * 构造订单簿
+     * @param productId 交易对 ID
+     * @param orderSequence 订单序列号
+     * @param tradeSequence 成交序列号
+     * @param orderBookSequence 订单簿序列号
+     * @param accountBook 账户簿
+     * @param productBook 交易对簿
+     * @param messageSender 消息发送器
+     * @param messageSequence 消息序列号计数器
+     */
     public OrderBook(String productId,
                      long orderSequence, long tradeSequence, long orderBookSequence,
                      AccountBook accountBook, ProductBook productBook, MessageSender messageSender, AtomicLong messageSequence) {
@@ -44,6 +70,10 @@ public class OrderBook {
         this.messageSequence = messageSequence;
     }
 
+    /**
+     * 下单
+     * @param takerOrder 吃单订单
+     */
     public void placeOrder(Order takerOrder) {
         var product = productBook.getProduct(productId);
         if (product == null) {
@@ -136,6 +166,10 @@ public class OrderBook {
         messageSender.send(orderMessage(takerOrder.clone()));
     }
 
+    /**
+     * 撤单
+     * @param orderId 订单 ID
+     */
     public void cancelOrder(String orderId) {
         var order = orderById.remove(orderId);
         if (order == null) {
@@ -155,6 +189,12 @@ public class OrderBook {
         unholdOrderFunds(order, product);
     }
 
+    /**
+     * 撮合成交
+     * @param takerOrder 吃单订单
+     * @param makerOrder 挂单订单
+     * @return 成交记录，无法成交返回 null
+     */
     private Trade trade(Order takerOrder, Order makerOrder) {
         BigDecimal price = makerOrder.getPrice();
 
@@ -201,12 +241,22 @@ public class OrderBook {
         return trade;
     }
 
+    /**
+     * 添加订单到订单簿
+     * @param order 订单
+     */
     public void addOrder(Order order) {
         var depth = order.getSide() == OrderSide.BUY ? bids : asks;
         depth.addOrder(order);
         orderById.put(order.getId(), order);
     }
 
+    /**
+     * 判断是否价格交叉
+     * @param takerOrder 吃单订单
+     * @param makerOrderPrice 挂单价格
+     * @return 是否交叉
+     */
     private boolean isPriceCrossed(Order takerOrder, BigDecimal makerOrderPrice) {
         if (takerOrder.getType() == OrderType.MARKET) {
             return true;
@@ -218,6 +268,11 @@ public class OrderBook {
         }
     }
 
+    /**
+     * 解冻订单资金
+     * @param makerOrder 订单
+     * @param product 交易对
+     */
     private void unholdOrderFunds(Order makerOrder, Product product) {
         if (makerOrder.getSide() == OrderSide.BUY) {
             if (makerOrder.getRemainingFunds().compareTo(BigDecimal.ZERO) > 0) {
@@ -231,6 +286,11 @@ public class OrderBook {
     }
 
 
+    /**
+     * 创建订单消息
+     * @param order 订单
+     * @return 订单消息
+     */
     private OrderMessage orderMessage(Order order) {
         OrderMessage message = new OrderMessage();
         message.setSequence(messageSequence.incrementAndGet());
@@ -239,6 +299,11 @@ public class OrderBook {
         return message;
     }
 
+    /**
+     * 创建成交消息
+     * @param trade 成交
+     * @return 成交消息
+     */
     private TradeMessage tradeMessage(Trade trade) {
         TradeMessage message = new TradeMessage();
         message.setSequence(messageSequence.incrementAndGet());

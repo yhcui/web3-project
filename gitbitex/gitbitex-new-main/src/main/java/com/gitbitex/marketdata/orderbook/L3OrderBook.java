@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * L3 订单簿类
+ * 存储完整的订单簿数据（包含每个订单的详细信息）
+ */
 @Getter
 @Setter
 public class L3OrderBook {

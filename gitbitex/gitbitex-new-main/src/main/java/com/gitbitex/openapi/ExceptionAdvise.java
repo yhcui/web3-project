@@ -18,9 +18,18 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * @author lingqingwan
  */
+/**
+ * 全局异常处理器
+ * 统一处理 Controller 层抛出的异常
+ */
 @ControllerAdvice
 @Slf4j
 public class ExceptionAdvise {
+    /**
+     * 处理通用异常
+     * @param e 异常
+     * @return 错误消息
+     */
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     @ResponseBody
@@ -30,6 +39,12 @@ public class ExceptionAdvise {
         return new ErrorMessage(e.getMessage());
     }
 
+    /**
+     * 处理业务异常
+     * @param e 业务异常
+     * @param request 请求上下文
+     * @return 错误消息
+     */
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(ServiceException.class)
     @ResponseBody
@@ -39,6 +54,11 @@ public class ExceptionAdvise {
         return new ErrorMessage(e.getCode().name());
     }
 
+    /**
+     * 处理参数校验异常
+     * @param e 校验异常
+     * @return 错误消息
+     */
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody
@@ -53,6 +73,13 @@ public class ExceptionAdvise {
         return new ErrorMessage(sb.toString());
     }
 
+    /**
+     * 处理响应状态异常
+     * @param e 状态异常
+     * @param request HTTP 请求
+     * @param response HTTP 响应
+     * @return 错误消息
+     */
     @ExceptionHandler(ResponseStatusException.class)
     @ResponseBody
     public ErrorMessage handleException(ResponseStatusException e, HttpServletRequest request,

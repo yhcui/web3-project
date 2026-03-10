@@ -21,10 +21,9 @@ package com.gitbitex.stripexecutor;
 import java.util.concurrent.Callable;
 
 /**
- * All of the Callables in the same "Stripe" will be executed consecutively.
- *
- * @author Dr Heinz M. Kabutz
- * @see StripedExecutorService
+ * 条纹可调用任务接口
+ * 同一条纹的任务将按顺序执行
+ * @param <V> 返回值类型
  */
 public interface StripedCallable<V> extends Callable<V>, StripedObject {
 }

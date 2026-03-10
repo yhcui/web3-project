@@ -11,23 +11,44 @@ import org.springframework.stereotype.Component;
 
 import java.util.Properties;
 
+/**
+ * 撮合引擎命令生产者
+ * 负责向 Kafka 发送命令消息
+ */
 @Component
 public class MatchingEngineCommandProducer {
+    /** 应用配置 */
     private final AppProperties appProperties;
+    /** Kafka 配置 */
     private final KafkaProperties kafkaProperties;
+    /** Kafka 生产者 */
     private final KafkaProducer<String, Command> kafkaProducer;
 
+    /**
+     * 构造生产者
+     * @param appProperties 应用配置
+     * @param kafkaProperties Kafka 配置
+     */
     public MatchingEngineCommandProducer(AppProperties appProperties, KafkaProperties kafkaProperties) {
         this.appProperties = appProperties;
         this.kafkaProperties = kafkaProperties;
         this.kafkaProducer = kafkaProducer();
     }
 
+    /**
+     * 发送命令
+     * @param command 命令
+     * @param callback 发送回调
+     */
     public void send(Command command, Callback callback) {
         ProducerRecord<String, Command> record = new ProducerRecord<>(appProperties.getMatchingEngineCommandTopic(), command);
         kafkaProducer.send(record, callback);
     }
 
+    /**
+     * 创建 Kafka 生产者
+     * @return Kafka 生产者
+     */
     public KafkaProducer<String, Command> kafkaProducer() {
         Properties properties = new Properties();
         properties.put("bootstrap.servers", kafkaProperties.getBootstrapServers());

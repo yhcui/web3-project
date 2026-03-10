@@ -14,16 +14,30 @@ import org.springframework.context.annotation.Configuration;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
+/**
+ * MongoDB 配置类
+ * 配置 MongoDB 客户端和数据库
+ */
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties(MongoProperties.class)
 public class MongoDbConfig {
 
+    /**
+     * 创建 MongoDB 客户端
+     * @param mongoProperties MongoDB 配置属性
+     * @return MongoDB 客户端
+     */
     @Bean(destroyMethod = "close")
     public MongoClient mongoClient(MongoProperties mongoProperties) {
         return MongoClients.create(mongoProperties.getUri());
     }
 
+    /**
+     * 获取 MongoDB 数据库
+     * @param mongoClient MongoDB 客户端
+     * @return MongoDB 数据库
+     */
     @Bean
     public MongoDatabase database(MongoClient mongoClient) {
         CodecRegistry pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),

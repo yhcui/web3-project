@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * L2 订单簿类
+ * 存储聚合后的订单簿数据（按价格分组）
+ */
 @Getter
 @Setter
 public class L2OrderBook {

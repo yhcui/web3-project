@@ -15,11 +15,23 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
+/**
+ * WebSocket 握手认证拦截器
+ * 在 WebSocket 连接建立前验证用户身份
+ */
 @Component
 @RequiredArgsConstructor
 public class AuthHandshakeInterceptor extends HttpSessionHandshakeInterceptor {
     private final UserManager userManager;
 
+    /**
+     * 握手前处理
+     * @param request 服务器请求
+     * @param response 服务器响应
+     * @param wsHandler WebSocket 处理器
+     * @param attributes 属性集合
+     * @return 是否继续握手
+     */
     @Override
     public boolean beforeHandshake(@NotNull ServerHttpRequest request, @NotNull ServerHttpResponse response,
                                    @NotNull WebSocketHandler wsHandler,
@@ -35,6 +47,11 @@ public class AuthHandshakeInterceptor extends HttpSessionHandshakeInterceptor {
         return true;
     }
 
+    /**
+     * 从请求中获取访问令牌
+     * @param request HTTP 请求
+     * @return 访问令牌
+     */
     private String getAccessToken(HttpServletRequest request) {
         String tokenKey = "accessToken";
         String token = request.getParameter(tokenKey);
