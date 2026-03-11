@@ -189,7 +189,7 @@ public class OrderBook {
             |---------|---------|---------|------|
             | 限价单 | > 0 | 加入订单簿 | OPEN |
             | 市价单 | > 0 | 取消剩余 | CANCELLED |
-            | 任意 | = 0 | 完成 | FILLED |
+            | 任意   | = 0 | 完成 | FILLED |
          */
         // If the taker order is not fully filled, put the taker order into the order book, otherwise mark
         // the order as done,The market order will never be added to the order book, and the market order without

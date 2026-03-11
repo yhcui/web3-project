@@ -65,16 +65,21 @@ public class MatchingEngine {
 
         sendCommandStartMessage(command, offset);
         if (command instanceof PlaceOrderCommand placeOrderCommand) {
+            // 下单
             executeCommand(placeOrderCommand);
         } else if (command instanceof CancelOrderCommand cancelOrderCommand) {
+            // 撤单
             executeCommand(cancelOrderCommand);
         } else if (command instanceof DepositCommand depositCommand) {
+            // 充值
             executeCommand(depositCommand);
         } else if (command instanceof PutProductCommand putProductCommand) {
+            // 添加交易对
             executeCommand(putProductCommand);
         } else {
             logger.warn("Unhandled command: {} {}", command.getClass().getName(), JSON.toJSONString(command));
         }
+        // 发送命令结束消息
         sendCommandEndMessage(command, offset);
     }
 

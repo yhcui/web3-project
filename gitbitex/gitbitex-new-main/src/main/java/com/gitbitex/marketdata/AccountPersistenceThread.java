@@ -32,7 +32,11 @@ public class AccountPersistenceThread extends KafkaConsumerThread<String, Messag
     private final AccountManager accountManager;
     /** 应用配置 */
     private final AppProperties appProperties;
-    /** 账户 Redis 主题 */
+    /**
+      RTopic 是 Redisson 客户端提供的一个发布/订阅（Pub/Sub）功能实现，基于 Redis 的 Pub/Sub 机制。它用于在分布式系统中实现实时消息广播。
+      账户 Redis 主题
+
+    */
     private final RTopic accountTopic;
 
     /**

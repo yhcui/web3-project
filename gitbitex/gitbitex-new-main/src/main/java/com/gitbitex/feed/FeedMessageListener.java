@@ -46,6 +46,7 @@ public class FeedMessageListener {
             });
         });
 
+        // 订阅 "account" 主题，监听账户变化
         redissonClient.getTopic("account", StringCodec.INSTANCE).addListener(String.class, (c, msg) -> {
             AccountMessage accountMessage = JSON.parseObject(msg, AccountMessage.class);
             callbackExecutor.execute(accountMessage.getAccount().getUserId(), () -> {
