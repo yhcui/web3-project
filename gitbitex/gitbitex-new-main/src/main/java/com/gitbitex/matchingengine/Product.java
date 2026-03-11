@@ -13,7 +13,20 @@ import lombok.Setter;
 public class Product implements Cloneable {
     /** 交易对 ID */
     private String id;
-    /** 基础币种 */
+    /**
+     基础币种
+     你想用 USDT 买 BTC：
+     - 基础币种（BTC）：你要买的商品 → 1 BTC
+     - 计价币种（USDT）：你支付的货币 → 50,000 USDT
+
+     你想卖出 BTC 换 USDT：
+     - 基础币种（BTC）：你要卖的商品 → 1 BTC
+     - 计价币种（USDT）：你收到的货币 → 50,000 USDT
+
+     解释：
+     买单：你要买东西 → 需要先冻结你的钱（计价币种 USDT）
+     卖单：你要卖东西 → 需要先冻结你的货（基础币种 BTC）
+    */
     private String baseCurrency;
     /** 计价币种 */
     private String quoteCurrency;
