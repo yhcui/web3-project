@@ -20,11 +20,11 @@ public class PlaceOrderCommand extends Command {
     private String orderId;
     /** 用户 ID */
     private String userId;
-    /** 订单数量 */
+    /** 订单数量 - 币的数量 */
     private BigDecimal size;
     /** 订单价格 */
     private BigDecimal price;
-    /** 订单金额 */
+    /** 订单金额  - 资金的数量*/
     private BigDecimal funds;
     /** 订单类型 */
     private OrderType orderType;

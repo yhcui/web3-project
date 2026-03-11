@@ -168,11 +168,13 @@ public class OrderController {
                 funds = side == OrderSide.BUY ? size.multiply(price) : BigDecimal.ZERO;
             }
             case MARKET -> {
-                price = BigDecimal.ZERO;
+                price = BigDecimal.ZERO; // 市价单价格为 0
                 if (side == OrderSide.BUY) {
+                    // 市价买单指定的是资金量，而非币量
                     size = BigDecimal.ZERO;
                     funds = funds.setScale(product.getQuoteScale(), RoundingMode.DOWN);
                 } else {
+                    // 市价卖单指定的是币量
                     size = size.setScale(product.getBaseScale(), RoundingMode.DOWN);
                     funds = BigDecimal.ZERO;
                 }

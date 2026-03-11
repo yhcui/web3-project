@@ -236,55 +236,82 @@ public class OrderBook {
 
     /**
      * 撮合成交
+     * 1. 市价买单的特殊处理（第 248-251 行）
+     *  市价买单只指定了要花多少钱（比如 1000 元），而不指定买多少个。所以需要根据挂单价格换算成数量。
+     * 2. 成交量确定原则（第 261 行）
+     *  采用 "少量成交" 原则：
+     *  吃单想吃 10 个，挂单只剩 5 个 → 成交 5 个
+     *  吃单想吃 3 个，挂单有 5 个 → 成交 3 个
      * @param takerOrder 吃单订单
      * @param makerOrder 挂单订单
      * @return 成交记录，无法成交返回 null
      */
     private Trade trade(Order takerOrder, Order makerOrder) {
         BigDecimal price = makerOrder.getPrice();
+        // 使用挂单的价格作为成交价格（这是交易所的标准做法）
 
-        // get taker size
+        // === 步骤 1：计算吃单的实际交易数量 ===
         BigDecimal takerSize;
         if (takerOrder.getSide() == OrderSide.BUY && takerOrder.getType() == OrderType.MARKET) {
-            // The market order does not specify a price, so the size of the maker order needs to be
-            // calculated by the price of the maker order
+            // 特殊情况：市价买单
+            // 市价单不指定价格，只指定要花费的金额（funds）
+            // 所以需要用：金额 ÷ 价格 = 数量
+            // 例如：想用 1000 元买 BTC，当前价格 50000 元/BTC → 可买 0.02 BTC
             takerSize = takerOrder.getRemainingFunds().divide(price, 4, RoundingMode.DOWN);
         } else {
+            // 其他情况直接使用订单的剩余数量
+            // 包括：限价单、市价卖单
             takerSize = takerOrder.getRemainingSize();
         }
 
+        // 如果计算后数量为 0，无法成交
         if (takerSize.compareTo(BigDecimal.ZERO) == 0) {
             return null;
         }
 
-        // take the minimum size of taker and maker as trade size
+        // === 步骤 2：确定实际成交量 ===
+        // 取双方剩余数量的较小值（撮合原则：部分成交）
+        // 例如：吃单想买 10 个，挂单只卖 5 个 → 成交 5 个
         BigDecimal tradeSize = takerSize.min(makerOrder.getRemainingSize());
+
+        // 计算成交金额 = 数量 × 价格
         BigDecimal tradeFunds = tradeSize.multiply(price);
 
-        // fill order
+        // === 步骤 3：更新订单状态 ===
+        // 减少双方的剩余数量
         takerOrder.setRemainingSize(takerOrder.getRemainingSize().subtract(tradeSize));
         makerOrder.setRemainingSize(makerOrder.getRemainingSize().subtract(tradeSize));
+
+        // 减少资金冻结
         if (takerOrder.getSide() == OrderSide.BUY) {
+            // 吃单是买单：扣除买方的资金
             takerOrder.setRemainingFunds(takerOrder.getRemainingFunds().subtract(tradeFunds));
         } else {
+            // 吃单是卖单：扣除卖方的资金（卖方需要扣除币的数量对应的资金）
+            // ⚠️ 这里可能有 bug！卖单应该扣减的是 remainingSize，而不是 funds
             makerOrder.setRemainingFunds(makerOrder.getRemainingFunds().subtract(tradeFunds));
         }
+
+        // 如果挂单完全成交，设置状态为已成交
         if (makerOrder.getRemainingSize().compareTo(BigDecimal.ZERO) == 0) {
             makerOrder.setStatus(OrderStatus.FILLED);
         }
 
+        // === 步骤 4：创建成交记录 ===
         Trade trade = new Trade();
-        trade.setSequence(++tradeSequence);
-        trade.setProductId(productId);
-        trade.setSize(tradeSize);
-        trade.setFunds(tradeFunds);
-        trade.setPrice(price);
-        trade.setSide(makerOrder.getSide());
-        trade.setTime(takerOrder.getTime());
-        trade.setTakerOrderId(takerOrder.getId());
-        trade.setMakerOrderId(makerOrder.getId());
+        trade.setSequence(++tradeSequence);           // 成交序列号
+        trade.setProductId(productId);                // 交易对 ID
+        trade.setSize(tradeSize);                     // 成交数量
+        trade.setFunds(tradeFunds);                   // 成交金额
+        trade.setPrice(price);                        // 成交价格
+        trade.setSide(makerOrder.getSide());          // 挂单的买卖方向
+        trade.setTime(takerOrder.getTime());          // 成交时间
+        trade.setTakerOrderId(takerOrder.getId());    // 吃单 ID
+        trade.setMakerOrderId(makerOrder.getId());    // 挂单 ID
+
         return trade;
     }
+
 
     /**
      * 添加订单到订单簿
@@ -306,9 +333,27 @@ public class OrderBook {
         if (takerOrder.getType() == OrderType.MARKET) {
             return true;
         }
+        /*
+            吃单和卖单的区别
+            这里有个概念混淆：
+                吃单 (Taker)：是指订单的角色，指主动成交的订单
+                卖单 (Sell)：是指订单的方向，与买单 (Buy) 相对
+            所以"吃单卖单"这个说法不太准确，应该说：
+                吃单（Taker）- 主动成交的订单（可以是买单也可以是卖单）
+                挂单（Maker）- 被动等待成交的订单（可以是买单也可以是卖单）
+            价格交叉的判断逻辑应该是：
+            对于买单（BUY）：
+                如果吃单价格 ≥ 挂单价格 → 可以成交
+                例如：有人愿意用 100 元买入，而订单簿上有 99 元的卖单 → 成交
+            对于卖单（SELL）：
+                如果吃单价格 ≤ 挂单价格 → 可以成交
+                例如：有人愿意用 99 元卖出，而订单簿上有 100 元的买单 → 成交
+         */
         if (takerOrder.getSide() == OrderSide.BUY) {
+            // 买单：吃单价格 >= 挂单价格时可以成交
             return takerOrder.getPrice().compareTo(makerOrderPrice) >= 0;
         } else {
+            // 卖单：吃单价格 <= 挂单价格时可以成交
             return takerOrder.getPrice().compareTo(makerOrderPrice) <= 0;
         }
     }
