@@ -1,0 +1,35 @@
+package com.gitbitex.marketdata.manager;
+
+import com.gitbitex.marketdata.entity.OrderEntity;
+import com.gitbitex.marketdata.repository.FillRepository;
+import com.gitbitex.marketdata.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+
+/**
+ * 订单管理器
+ * 负责订单数据的保存
+ */
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class OrderManager {
+    private final OrderRepository orderRepository;
+    private final FillRepository fillRepository;
+
+    /**
+     * 批量保存订单
+     * @param orders 订单集合
+     */
+    public void saveAll(Collection<OrderEntity> orders) {
+        if (orders.isEmpty()) {
+            return;
+        }
+        long t1 = System.currentTimeMillis();
+        orderRepository.saveAll(orders);
+        logger.info("saved {} order(s) ({}ms)", orders.size(), System.currentTimeMillis() - t1);
+    }
+}

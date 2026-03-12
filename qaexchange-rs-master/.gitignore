@@ -1,0 +1,17 @@
+# Build artifacts
+target/
+output/
+book/
+
+# Test data
+data/
+
+# Temporary files
+*.tmp
+*.log
+
+CLAUDE.md
+.claude/
+CLAUDE.md
+AGENTS.md
+ppt/

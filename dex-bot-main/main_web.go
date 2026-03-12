@@ -27,11 +27,18 @@ import (
 // @schemes http https
 
 func main() {
-	// 命令行参数
+	// 命令行参数 在 Go 语言中，flag 是一个标准库包，用于解析命令行参数
 	dbPath := flag.String("db", "./db.db", "数据库文件路径")
 	port := flag.String("port", "8080", "服务端口")
 	mode := flag.String("mode", "release", "运行模式: debug, release")
 	initData := flag.Bool("init", false, "是否初始化示例数据")
+	/*
+		 flag.Parse() 会：
+			扫描命令行参数 - 查找所有以 - 开头的参数
+			匹配已定义的 flag - 将传入的参数与之前用 flag.String、flag.Bool 等定义的变量进行匹配
+			赋值 - 将用户传入的值赋给对应的变量
+			使用默认值 - 如果某个参数没有传入，就使用定义时的默认值
+	*/
 	flag.Parse()
 
 	// 设置 Gin 模式
