@@ -29,10 +29,20 @@ public class OrderBook {
     private final ProductBook productBook;
     /** 账户簿 */
     private final AccountBook accountBook;
-    /** 卖单深度 */
+    /**
+     卖单深度
+     排序规则: 升序 (从小到大)
+     逻辑含义: 卖单希望以更高的价格卖出，但撮合时优先匹配价格最低的卖单（因为对买家来说最划算）。
+     价格序列为 100, 101, 102...，撮合引擎会先处理 100 的卖单。
+     */
     private final Depth asks = new Depth(Comparator.naturalOrder());
-    /** 买单深度 */
-    private final Depth bids = new Depth(Comparator.reverseOrder());
+    /**
+     买单深度 (bids)
+     排序规则: 降序 (从大到小)
+     逻辑含义: 买单希望以更低的价格买入，但撮合时优先匹配价格最高的买单（因为对卖家来说最划算）。
+     示例: 价格序列为 99, 98, 97...，撮合引擎会先处理 99 的买单。
+     */
+     private final Depth bids = new Depth(Comparator.reverseOrder());
     /** 订单 ID 映射 */
     private final Map<String, Order> orderById = new HashMap<>();
     /** 消息发送器 */
@@ -90,6 +100,13 @@ public class OrderBook {
      * ✅ 完整的状态管理和事件通知
      * ✅ 资金安全（先冻结后交易）
      * 是一个简洁但功能完整的撮合引擎核心实现。
+     *
+     * 这种设计确保了在遍历订单簿进行撮合时（参考 placeOrder 方法中的 MATCHING 循环），迭代器总是按照最优价格的顺序提供订单：
+     * 吃买单时（用户下一个买单（Buy Order）作为吃单（Taker）），从最低的卖价开始扫货。
+     * 吃卖单时（用户下一个卖单（Sell Order）作为吃单（Taker）），从最高的买价开始出货。
+     * 在撮合引擎（系统）的角度，为了遵循交易所核心的“价格优先”原则而设计的遍历逻辑。
+     * 具体来说，是为了让主动成交的订单（Taker）能以当前市场上最优的价格立即成交。
+     *
      * @param takerOrder 吃单订单
      */
     public void placeOrder(Order takerOrder) {
