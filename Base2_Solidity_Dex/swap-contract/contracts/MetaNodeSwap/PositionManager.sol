@@ -54,6 +54,12 @@ contract PositionManager is IPositionManager, ERC721 {
         _;
     }
 
+    /// @notice 在指定池子中按期望的 amount0/amount1 计算并注入流动性，铸造一枚 NFT 给 recipient，代表该头寸；调用前需对 token0、token1 授权足够额度。
+    /// @param params 包含 token0、token1、index、数量期望、recipient、deadline 等
+    /// @return positionId 新铸造的 NFT tokenId（即头寸 ID）
+    /// @return liquidity 本次注入的流动性数量
+    /// @return amount0 实际使用的 token0 数量
+    /// @return amount1 实际使用的 token1 数量
     function mint(
         MintParams calldata params
     )
@@ -137,6 +143,10 @@ contract PositionManager is IPositionManager, ERC721 {
         _;
     }
 
+    /// @notice 撤销指定头寸的全部流动性：从池子 burn 对应 liquidity，应得 token0/token1 与未领手续费一并记入该头寸的 tokensOwed，需后续调用 collect 取回；若流动性为 0 且已领完，collect 时会销毁 NFT。
+    /// @param positionId NFT tokenId（头寸 ID）
+    /// @return amount0 本次撤出对应的 token0 数量（已累加到 tokensOwed，未实际转出）
+    /// @return amount1 本次撤出对应的 token1 数量（已累加到 tokensOwed，未实际转出）
     function burn(
         uint256 positionId
     )
