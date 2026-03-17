@@ -83,7 +83,11 @@ contract Pool is IPool {
             positions[owner].tokensOwed1
         );
     }
-
+    //  Factory.createPool 先设置 parameters 状态变量 
+    // 执行 new Pool{salt: salt}() 部署合约，触发 Pool 的 constructor。
+    // onstructor 中 msg.sender 为 Factory 地址，反向读取 parameters 完成初始化。
+    // Factory 随后 delete parameters 清理临时数据
+    // 这是一种巧妙的设计模式，既保证了 immutable 变量的不可变性，又确保了 CREATE2 生成地址的可预测性。
     constructor() {
         // constructor 中初始化 immutable 的常量
         // Factory 创建 Pool 时会通 new Pool{salt: salt}() 的方式创建 Pool 合约，通过 salt 指定 Pool 的地址，这样其他地方也可以推算出 Pool 的地址
