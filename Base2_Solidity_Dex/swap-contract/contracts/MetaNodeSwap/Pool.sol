@@ -41,6 +41,7 @@ contract Pool is IPool {
     uint128 public override liquidity;
 
     /// @inheritdoc IPool
+    // 池子全局单位流动性的手续费增长累计值。
     uint256 public override feeGrowthGlobal0X128;
     /// @inheritdoc IPool
     uint256 public override feeGrowthGlobal1X128;
@@ -116,13 +117,16 @@ contract Pool is IPool {
         // any change in liquidity
         int128 liquidityDelta;
     }
-
+    /*
+    在 _modifyPosition 函数中，返回值的正负号代表 资金流向
+    正数 (+)	需要用户 存入 Token	用户 → 池子
+    负数 (-)	用户应该 收到 Token	池子 → 用户
+    */
     function _modifyPosition(
         ModifyPositionParams memory params
     ) private returns (int256 amount0, int256 amount1) {
         // 通过新增的流动性计算 amount0 和 amount1
         // 参考 UniswapV3 的代码
-
         amount0 = SqrtPriceMath.getAmount0Delta(
             sqrtPriceX96,
             TickMath.getSqrtPriceAtTick(tickUpper),
@@ -137,6 +141,9 @@ contract Pool is IPool {
         Position storage position = positions[params.owner];
 
         // 提取手续费，计算从上一次提取到当前的手续费
+        // 该持仓位置应得的手续费收益。
+        // 计算公式为： 应得手续费 = (全局手续费增长 - 上次记录增长) * 流动性 / 精度系数
+        // tokensOwed0 计算得出的该位置可提取的 token0 手续费数量。
         uint128 tokensOwed0 = uint128(
             FullMath.mulDiv(
                 feeGrowthGlobal0X128 - position.feeGrowthInside0LastX128,
@@ -193,8 +200,8 @@ contract Pool is IPool {
     }
 
     function mint(
-        address recipient,
-        uint128 amount,
+        address recipient, // 流动性的权益赋予谁
+        uint128 amount, // 流动性 基于传入的 `amount` 计算出 `amount0` 和 `amount1`，并返回这两个值
         bytes calldata data
     ) external override returns (uint256 amount0, uint256 amount1) {
         require(amount > 0, "Mint amount must be greater than 0");
@@ -222,13 +229,16 @@ contract Pool is IPool {
 
         emit Mint(msg.sender, recipient, amount, amount0, amount1);
     }
-
+    // 领取手续费
     function collect(
         address recipient,
         uint128 amount0Requested,
         uint128 amount1Requested
     ) external override returns (uint128 amount0, uint128 amount1) {
         // 获取当前用户的 position
+        // 每个 Pool 合约的费率和价格区间都是固定的，所以一个用户在这个 Pool 中最多只能有一个 Position
+        // 当前代码中 positions 和 fee 没有直接关系是因为 费率在 Pool 级别固定，而非 Position 级别。
+        // 这是简化版设计，适合特定价格区间的流动性池场景。
         Position storage position = positions[msg.sender];
 
         // 把钱退给用户 recipient
@@ -251,6 +261,7 @@ contract Pool is IPool {
         emit Collect(msg.sender, recipient, amount0, amount1);
     }
 
+    // 把流动性移除，并计算出要退回给 LP 的 `amount0` 和 `amount1`，记录在合约状态中。
     function burn(
         uint128 amount
     ) external override returns (uint256 amount0, uint256 amount1) {
