@@ -1,0 +1,101 @@
+# Example config for local/dev.
+# Do not put real API keys or RPC credentials in committed files.
+server_address: ":7788"
+etherscan_api_key: 7VB1YTKXIKJYSFE24E3PSNVIA7BNN92ZHT
+etherscan_api_prs: 2
+
+# Optional explorer fallback for history backfill.
+# Keys are chain IDs in decimal. Example:
+#   1 = eth, 56 = bsc, 8453 = base, 42161 = arb, 10 = op, 137 = polygon
+history_fallback:
+  blockscout_prs: 2
+  blockscout_hosts:
+    "8453": "https://base.blockscout.com/api"
+
+
+skip_catch_up: true    # 重启不追块，直接从最新区块开始（默认 false，追块）
+
+endpoints:
+    - name: "Ethereum"
+      chain: "eth"
+      interval: 5000
+      failover_backoff_ms: 750
+      multicall_batch_size: 1000
+      discovery_workers: 32
+      max_workers: 10                    # 并发处理区块的 worker 数量
+      height_check_interval_sec: 30      # 定期检查链上高度的间隔（秒），用于补漏
+      urls:
+        - url: "wss://ethereum.blockpi.network/v1/rpc/"
+          prs: 100
+        - url: wss://rpc.ankr.com/eth/ws/
+          prs: 40
+        - url: "https://eth-mainnet.g.alchemy.com/v2/qLVks-ioeg_c5r6FDc8VT"
+          prs: 50
+    - name: "BSC"
+      chain: "bsc"
+      interval: 3000
+      failover_backoff_ms: 750
+      multicall_batch_size: 1000
+      discovery_workers: 32
+      max_workers: 10
+      height_check_interval_sec: 15      # BSC 出块快，检查更频繁
+      urls:
+        - url: wss://bsc.blockpi.network/v1/ws/
+          prs: 100
+        - url: wss://rpc.ankr.com/bsc/ws/
+          prs: 40
+        - url: "https://bsc-mainnet.infura.io/v3/"
+          prs: 20
+
+  - name: Arbitrum
+    chain: arb
+    interval: 3_000
+    multicall_batch_size: 1000
+    discovery_workers: 32
+    urls:
+      - url: wss://arbitrum.blockpi.network/v1/ws/
+        prs: 100
+      - url: wss://rpc.ankr.com/arbitrum/ws/
+        prs: 40
+
+  - name: Polygon
+    chain: polygon
+    interval: 3_000
+    multicall_batch_size: 1000
+    discovery_workers: 32
+    urls:
+      - url: wss://polygon.blockpi.network/v1/ws/
+        prs: 100
+      - url: wss://rpc.ankr.com/polygon/ws/
+        prs: 40
+
+  - name: Base
+    chain: base
+    interval: 3_000
+    multicall_batch_size: 1000
+    discovery_workers: 32
+    urls:
+      - url: wss://base.blockpi.network/v1/ws/
+        prs: 100
+      - url: wss://rpc.ankr.com/base/ws/
+        prs: 40
+
+  - name: Optimism
+    chain: op
+    interval: 3_000
+    multicall_batch_size: 1000
+    discovery_workers: 32
+    urls:
+      - url: wss://optimism.blockpi.network/v1/ws/
+        prs: 100
+
+gateway:
+  enabled: true
+  url: "ws://localhost:9000/ws/upstream"
+  reconnect_interval_ms: 5000
+  ping_interval_ms: 30000
+
+
+
+
+

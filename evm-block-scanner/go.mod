@@ -1,0 +1,60 @@
+module evm-scanner
+
+go 1.26.0
+
+require (
+	github.com/ethereum/go-ethereum v1.17.0
+	github.com/shopspring/decimal v1.4.0
+	golang.org/x/time v0.14.0
+	gopkg.in/yaml.v3 v3.0.1
+)
+
+require (
+	github.com/go-viper/mapstructure/v2 v2.4.0
+	github.com/jedib0t/go-pretty/v6 v6.7.8
+	github.com/ncruces/go-sqlite3 v0.33.2
+	go.etcd.io/bbolt v1.4.3
+)
+
+require (
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/go-logr/logr v1.4.3 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/gofrs/flock v0.13.0 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/ncruces/go-sqlite3-wasm v1.0.4-0.20260329114232-2491c387476c // indirect
+	github.com/ncruces/julianday v1.0.0 // indirect
+	github.com/prometheus/client_golang v1.23.2 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/rs/zerolog v1.35.0 // indirect
+	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
+	go.opentelemetry.io/otel v1.39.0 // indirect
+	go.opentelemetry.io/otel/metric v1.39.0 // indirect
+	go.opentelemetry.io/otel/trace v1.39.0 // indirect
+	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
+	golang.org/x/text v0.34.0 // indirect
+)
+
+require (
+	github.com/Microsoft/go-winio v0.6.2 // indirect
+	github.com/ProjectZKM/Ziren/crates/go-runtime/zkvm_runtime v0.0.0-20260218040609-6f1c0c95351b // indirect
+	github.com/StackExchange/wmi v1.2.1 // indirect
+	github.com/bits-and-blooms/bitset v1.24.4 // indirect
+	github.com/consensys/gnark-crypto v0.19.2 // indirect
+	github.com/crate-crypto/go-eth-kzg v1.5.0 // indirect
+	github.com/deckarep/golang-set/v2 v2.6.0 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
+	github.com/ethereum/c-kzg-4844/v2 v2.1.5 // indirect
+	github.com/go-ole/go-ole v1.3.0 // indirect
+	github.com/google/uuid v1.6.0
+	github.com/gorilla/websocket v1.5.0
+	github.com/holiman/uint256 v1.3.2 // indirect
+	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
+	github.com/supranational/blst v0.3.16 // indirect
+	github.com/tklauser/go-sysconf v0.3.12 // indirect
+	github.com/tklauser/numcpus v0.6.1 // indirect
+	golang.org/x/sync v0.19.0
+	golang.org/x/sys v0.42.0 // indirect
+)

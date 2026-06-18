@@ -1,0 +1,11 @@
+config.yaml
+node_modules
+bun.lock
+package.json
+height.map
+.vscode
+cache
+*.log
+.idea
+.cache
+.DS_Store
